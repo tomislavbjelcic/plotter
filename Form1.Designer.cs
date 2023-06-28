@@ -41,13 +41,21 @@
             this.chooseFileBtn = new System.Windows.Forms.Button();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.hmPlot = new ScottPlot.FormsPlot();
             this.panelTrackBar = new System.Windows.Forms.Panel();
             this.totalLbl = new System.Windows.Forms.Label();
             this.indexLbl = new System.Windows.Forms.Label();
+            this.offsetLbl = new System.Windows.Forms.Label();
+            this.lengthLbl = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.panelTrackBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -55,11 +63,11 @@
             // 
             this.trackBar1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.trackBar1.LargeChange = 1;
-            this.trackBar1.Location = new System.Drawing.Point(0, 31);
+            this.trackBar1.Location = new System.Drawing.Point(0, 67);
             this.trackBar1.Margin = new System.Windows.Forms.Padding(2);
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.trackBar1.Size = new System.Drawing.Size(63, 521);
+            this.trackBar1.Size = new System.Drawing.Size(63, 485);
             this.trackBar1.TabIndex = 0;
             this.trackBar1.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.trackBar1.Scroll += new System.EventHandler(this.TrackBar_Scroll);
@@ -165,6 +173,7 @@
             // chart1
             // 
             chartArea1.AxisX.InterlacedColor = System.Drawing.Color.Gray;
+            chartArea1.AxisX.LabelStyle.Format = "{0}°";
             chartArea1.AxisX.LineColor = System.Drawing.Color.WhiteSmoke;
             chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
             chartArea1.AxisX.MajorTickMark.Size = 0F;
@@ -180,24 +189,51 @@
             this.chart1.Location = new System.Drawing.Point(0, 0);
             this.chart1.Margin = new System.Windows.Forms.Padding(2);
             this.chart1.Name = "chart1";
-            this.chart1.Size = new System.Drawing.Size(1082, 552);
+            this.chart1.Size = new System.Drawing.Size(524, 552);
             this.chart1.TabIndex = 3;
             this.chart1.Text = "chart1";
             this.chart1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.splitContainer1);
             this.panel2.Controls.Add(this.panelTrackBar);
-            this.panel2.Controls.Add(this.chart1);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1082, 552);
             this.panel2.TabIndex = 4;
             // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.hmPlot);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.chart1);
+            this.splitContainer1.Size = new System.Drawing.Size(1019, 552);
+            this.splitContainer1.SplitterDistance = 491;
+            this.splitContainer1.TabIndex = 5;
+            // 
+            // hmPlot
+            // 
+            this.hmPlot.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.hmPlot.Location = new System.Drawing.Point(0, 0);
+            this.hmPlot.Name = "hmPlot";
+            this.hmPlot.Size = new System.Drawing.Size(491, 552);
+            this.hmPlot.TabIndex = 0;
+            // 
             // panelTrackBar
             // 
             this.panelTrackBar.Controls.Add(this.trackBar1);
+            this.panelTrackBar.Controls.Add(this.lengthLbl);
+            this.panelTrackBar.Controls.Add(this.offsetLbl);
             this.panelTrackBar.Controls.Add(this.totalLbl);
             this.panelTrackBar.Controls.Add(this.indexLbl);
             this.panelTrackBar.Dock = System.Windows.Forms.DockStyle.Right;
@@ -209,11 +245,10 @@
             // 
             // totalLbl
             // 
-            this.totalLbl.AutoSize = true;
             this.totalLbl.Dock = System.Windows.Forms.DockStyle.Top;
             this.totalLbl.Location = new System.Drawing.Point(0, 18);
             this.totalLbl.Name = "totalLbl";
-            this.totalLbl.Size = new System.Drawing.Size(0, 13);
+            this.totalLbl.Size = new System.Drawing.Size(63, 13);
             this.totalLbl.TabIndex = 3;
             // 
             // indexLbl
@@ -223,6 +258,25 @@
             this.indexLbl.Name = "indexLbl";
             this.indexLbl.Size = new System.Drawing.Size(63, 18);
             this.indexLbl.TabIndex = 2;
+            // 
+            // offsetLbl
+            // 
+            this.offsetLbl.AutoSize = true;
+            this.offsetLbl.Dock = System.Windows.Forms.DockStyle.Top;
+            this.offsetLbl.Location = new System.Drawing.Point(0, 31);
+            this.offsetLbl.Name = "offsetLbl";
+            this.offsetLbl.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
+            this.offsetLbl.Size = new System.Drawing.Size(0, 23);
+            this.offsetLbl.TabIndex = 4;
+            // 
+            // lengthLbl
+            // 
+            this.lengthLbl.AutoSize = true;
+            this.lengthLbl.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lengthLbl.Location = new System.Drawing.Point(0, 54);
+            this.lengthLbl.Name = "lengthLbl";
+            this.lengthLbl.Size = new System.Drawing.Size(0, 13);
+            this.lengthLbl.TabIndex = 5;
             // 
             // Form1
             // 
@@ -240,6 +294,10 @@
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.panel2.ResumeLayout(false);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.panelTrackBar.ResumeLayout(false);
             this.panelTrackBar.PerformLayout();
             this.ResumeLayout(false);
@@ -263,6 +321,10 @@
         private System.Windows.Forms.Label indexLbl;
         private System.Windows.Forms.Label totalLbl;
         private System.Windows.Forms.Label mousePosLbl;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private ScottPlot.FormsPlot hmPlot;
+        private System.Windows.Forms.Label lengthLbl;
+        private System.Windows.Forms.Label offsetLbl;
     }
 }
 

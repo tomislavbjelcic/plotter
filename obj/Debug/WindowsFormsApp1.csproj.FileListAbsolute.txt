@@ -11,3 +11,11 @@ C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\obj\Debug\WindowsFormsA
 C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.pdb
 C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\alglib.net.dll
 C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.csproj.CopyComplete
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\ScottPlot.dll
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\ScottPlot.WinForms.dll
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Drawing.Common.dll
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Numerics.Vectors.dll
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.ValueTuple.dll
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\ScottPlot.xml
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Numerics.Vectors.xml
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.ValueTuple.xml

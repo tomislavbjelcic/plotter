@@ -8,16 +8,18 @@ namespace WindowsFormsApp1
     public static class Loader
     {
 
-        public static (double, double, List<double[]>) LoadPlotData(string fileName)
+        public static (double, double, double, List<double[]>) LoadPlotData(string fileName)
         {
             double innerDiameter;
             double outerDiameter;
+            double spacing;
             List<double[]> data = null;
             
             using (StreamReader sr = File.OpenText(fileName))
             {
                 innerDiameter = double.Parse(sr.ReadLine(), CultureInfo.InvariantCulture);
                 outerDiameter = double.Parse(sr.ReadLine(), CultureInfo.InvariantCulture);
+                spacing = double.Parse(sr.ReadLine(), CultureInfo.InvariantCulture);
                 data = new List<double[]>();
                 sr.ReadLine();
                 
@@ -33,7 +35,7 @@ namespace WindowsFormsApp1
                 }
             }
 
-            return (innerDiameter, outerDiameter, data);
+            return (innerDiameter, outerDiameter, spacing, data);
         }
 
 

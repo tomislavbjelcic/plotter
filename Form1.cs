@@ -1,6 +1,8 @@
-﻿using System;
+﻿using ScottPlot;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using static WindowsFormsApp1.Util;
@@ -9,6 +11,11 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
+        private static readonly ScottPlot.Drawing.Colormap CMAP 
+            = new ScottPlot.Drawing.Colormap(ReverseIColormap(new ScottPlot.Drawing.Colormaps.Turbo()));
+        private const string MEASURING_UNIT_RADIUS = "mm";
+        private const string MEASURING_UNIT_ANGLE = "°";
+
         private string fileName = null;
         private Series innerSeries = null;
         private Series outerSeries = null;
@@ -20,10 +27,14 @@ namespace WindowsFormsApp1
         private double[] anglesInterpolated = null;
         private double innerDiameter = 0.0;
         private double outerDiameter = 0.0;
+        private double spacing = 0.0;
+        private ScottPlot.Plottable.Heatmap hm = null;
+        private ScottPlot.Plottable.HLine hline = null;
 
         public Form1()
         {
             InitializeComponent();
+            InitializeHeatmapPlot();
 
 
             trackBar1.MouseWheel += (sender, e) =>
@@ -45,12 +56,7 @@ namespace WindowsFormsApp1
             
         }
 
-        private void TestBtn_Click(object sender, EventArgs e)
-        {
-            string msg = this.chart1.ChartAreas[0].AxisY.CustomLabels.Count.ToString();
-            MessageBox.Show(msg);
-            
-        }
+        
 
         private void ChooseFileBtn_Click(object sender, EventArgs e)
         {
@@ -105,6 +111,8 @@ namespace WindowsFormsApp1
         private void ClearBtn_Click(object sender, EventArgs e)
         {
             RemoveSeries();
+            RemoveHeatmap();
+            RemoveHline();
             this.radiuses = null;
             this.angles = null;
             this.radiusesInterpolated = null;
@@ -115,6 +123,8 @@ namespace WindowsFormsApp1
             this.totalLbl.Text = string.Empty;
             this.fileName = null;
             this.fileLbl.Text = string.Empty;
+
+            hmPlot.Refresh();
 
         }
 
@@ -197,8 +207,9 @@ namespace WindowsFormsApp1
             var pd = Loader.LoadPlotData(fileName);
             this.innerDiameter = pd.Item1;
             this.outerDiameter = pd.Item2;
+            this.spacing = pd.Item3;
             
-            var rds = pd.Item3;
+            var rds = pd.Item4;
             int rows = rds.Count;
             int n = rds[0].Length; // broj zavojnica
 
@@ -245,6 +256,11 @@ namespace WindowsFormsApp1
                 this.radiusesInterpolated.Add(rInterpolated);
                 this.radiuses.Add(rPeriodic);
             }
+
+            RemoveHeatmap();
+            RemoveHline();
+            AddHeatmap();
+            AddHline();
             
             trackBar1.Maximum = rows - 1;
             trackBar1.Minimum = 0;
@@ -289,7 +305,9 @@ namespace WindowsFormsApp1
             Axis yaxis = this.chart1.ChartAreas[0].AxisY;
             yaxis.Minimum = chartMin;
             yaxis.Maximum = chartMax;
-            string fmt = ticked ? "{0}%" : string.Empty;
+            string fmt = ticked ? "{0}%" : $"{{0}}{MEASURING_UNIT_RADIUS}";
+
+            
             
             
             
@@ -304,26 +322,97 @@ namespace WindowsFormsApp1
             yaxis.CustomLabels.Clear();
             for (double v = chartMin; v <= chartMax; v+=interval)
             {
-                string lbl = (v + eps) < ir ? string.Empty : (ticked ? string.Format(fmt, v) : v.ToString());
+                string lbl = (v + eps) < ir ? string.Empty : string.Format(fmt, v);
                 yaxis.CustomLabels.Add(v-eps, v+eps, lbl);
             }
+
+
+            double y = index * this.spacing;
+            this.hline.Y = y;
 
 
 
             this.indexLbl.Text = (index+1).ToString();
             this.totalLbl.Text = this.radiuses.Count.ToString();
 
+            this.offsetLbl.Text = y + MEASURING_UNIT_RADIUS;
+            this.lengthLbl.Text = this.radiuses.Count * this.spacing + MEASURING_UNIT_RADIUS;
+
 
             this.chart1.Invalidate();
+            this.hmPlot.Refresh();
             
         }
 
         
 
 
+        private void InitializeHeatmapPlot()
+        {
+            
+            
+            var plt = hmPlot.Plot;
+            plt.XAxis.SetBoundary(-5, 365);
+            plt.YAxis.SetBoundary(-1, 101);
+
+            plt.XAxis.TickLabelFormat(v => $"{v}{MEASURING_UNIT_ANGLE}");
+            plt.YAxis.TickLabelFormat(v => $"{v}{MEASURING_UNIT_RADIUS}");
 
 
 
 
+
+        }
+
+        private void AddHeatmap()
+        {
+            this.hm = hmPlot.Plot.AddHeatmap(
+                ConvertToIntensities(
+                    this.radiusesInterpolated, 
+                    this.radiusesInterpolated.Count, 
+                    this.anglesInterpolated.Length
+                    ), 
+                CMAP, 
+                false
+                );
+            hm.Smooth = true;
+            hm.Interpolation = System.Drawing.Drawing2D.InterpolationMode.Bilinear;
+            hm.XMin = 0;
+            hm.XMax = 360;
+            hm.YMin = 0;
+            double ymax = spacing * this.radiuses.Count;
+            hm.YMax = ymax;
+
+            hmPlot.Plot.XAxis.SetBoundary(-5, 365);
+            hmPlot.Plot.YAxis.SetBoundary(-0.01*ymax, 1.01*ymax);
+            hmPlot.Plot.AxisAuto();
+
+        }
+
+        private void RemoveHeatmap()
+        {
+            if (hm is null) return;
+            hmPlot.Plot.Remove(hm);
+            hm = null;
+        }
+
+        private void AddHline()
+        {
+            
+            this.hline = hmPlot.Plot.AddHorizontalLine(0, color: System.Drawing.Color.Red);
+        }
+
+        private void RemoveHline()
+        {
+            if (hline is null) return;
+            hmPlot.Plot.Remove(hline);
+            hline = null;
+        }
+
+        private void TestBtn_Click(object sender, EventArgs e)
+        {
+            
+
+        }
     }
 }
