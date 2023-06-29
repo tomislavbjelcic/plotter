@@ -32,8 +32,6 @@
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.mousePosLbl = new System.Windows.Forms.Label();
-            this.testBtn = new System.Windows.Forms.Button();
             this.relCheckBox = new System.Windows.Forms.CheckBox();
             this.clearBtn = new System.Windows.Forms.Button();
             this.plotBtn = new System.Windows.Forms.Button();
@@ -44,10 +42,10 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.hmPlot = new ScottPlot.FormsPlot();
             this.panelTrackBar = new System.Windows.Forms.Panel();
+            this.lengthLbl = new System.Windows.Forms.Label();
+            this.offsetLbl = new System.Windows.Forms.Label();
             this.totalLbl = new System.Windows.Forms.Label();
             this.indexLbl = new System.Windows.Forms.Label();
-            this.offsetLbl = new System.Windows.Forms.Label();
-            this.lengthLbl = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
@@ -80,8 +78,6 @@
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.mousePosLbl);
-            this.panel1.Controls.Add(this.testBtn);
             this.panel1.Controls.Add(this.relCheckBox);
             this.panel1.Controls.Add(this.clearBtn);
             this.panel1.Controls.Add(this.plotBtn);
@@ -93,26 +89,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1082, 30);
             this.panel1.TabIndex = 2;
-            // 
-            // mousePosLbl
-            // 
-            this.mousePosLbl.AutoSize = true;
-            this.mousePosLbl.Dock = System.Windows.Forms.DockStyle.Right;
-            this.mousePosLbl.Location = new System.Drawing.Point(710, 0);
-            this.mousePosLbl.Name = "mousePosLbl";
-            this.mousePosLbl.Size = new System.Drawing.Size(0, 13);
-            this.mousePosLbl.TabIndex = 6;
-            // 
-            // testBtn
-            // 
-            this.testBtn.Dock = System.Windows.Forms.DockStyle.Right;
-            this.testBtn.Location = new System.Drawing.Point(710, 0);
-            this.testBtn.Name = "testBtn";
-            this.testBtn.Size = new System.Drawing.Size(75, 28);
-            this.testBtn.TabIndex = 5;
-            this.testBtn.Text = "Test";
-            this.testBtn.UseVisualStyleBackColor = true;
-            this.testBtn.Click += new System.EventHandler(this.TestBtn_Click);
             // 
             // relCheckBox
             // 
@@ -189,10 +165,9 @@
             this.chart1.Location = new System.Drawing.Point(0, 0);
             this.chart1.Margin = new System.Windows.Forms.Padding(2);
             this.chart1.Name = "chart1";
-            this.chart1.Size = new System.Drawing.Size(524, 552);
+            this.chart1.Size = new System.Drawing.Size(525, 552);
             this.chart1.TabIndex = 3;
             this.chart1.Text = "chart1";
-            this.chart1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
             // 
             // panel2
             // 
@@ -218,7 +193,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.chart1);
             this.splitContainer1.Size = new System.Drawing.Size(1019, 552);
-            this.splitContainer1.SplitterDistance = 491;
+            this.splitContainer1.SplitterDistance = 490;
             this.splitContainer1.TabIndex = 5;
             // 
             // hmPlot
@@ -226,7 +201,7 @@
             this.hmPlot.Dock = System.Windows.Forms.DockStyle.Fill;
             this.hmPlot.Location = new System.Drawing.Point(0, 0);
             this.hmPlot.Name = "hmPlot";
-            this.hmPlot.Size = new System.Drawing.Size(491, 552);
+            this.hmPlot.Size = new System.Drawing.Size(490, 552);
             this.hmPlot.TabIndex = 0;
             // 
             // panelTrackBar
@@ -243,6 +218,25 @@
             this.panelTrackBar.TabIndex = 4;
             this.panelTrackBar.Visible = false;
             // 
+            // lengthLbl
+            // 
+            this.lengthLbl.AutoSize = true;
+            this.lengthLbl.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lengthLbl.Location = new System.Drawing.Point(0, 54);
+            this.lengthLbl.Name = "lengthLbl";
+            this.lengthLbl.Size = new System.Drawing.Size(0, 13);
+            this.lengthLbl.TabIndex = 5;
+            // 
+            // offsetLbl
+            // 
+            this.offsetLbl.AutoSize = true;
+            this.offsetLbl.Dock = System.Windows.Forms.DockStyle.Top;
+            this.offsetLbl.Location = new System.Drawing.Point(0, 31);
+            this.offsetLbl.Name = "offsetLbl";
+            this.offsetLbl.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
+            this.offsetLbl.Size = new System.Drawing.Size(0, 23);
+            this.offsetLbl.TabIndex = 4;
+            // 
             // totalLbl
             // 
             this.totalLbl.Dock = System.Windows.Forms.DockStyle.Top;
@@ -258,25 +252,6 @@
             this.indexLbl.Name = "indexLbl";
             this.indexLbl.Size = new System.Drawing.Size(63, 18);
             this.indexLbl.TabIndex = 2;
-            // 
-            // offsetLbl
-            // 
-            this.offsetLbl.AutoSize = true;
-            this.offsetLbl.Dock = System.Windows.Forms.DockStyle.Top;
-            this.offsetLbl.Location = new System.Drawing.Point(0, 31);
-            this.offsetLbl.Name = "offsetLbl";
-            this.offsetLbl.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
-            this.offsetLbl.Size = new System.Drawing.Size(0, 23);
-            this.offsetLbl.TabIndex = 4;
-            // 
-            // lengthLbl
-            // 
-            this.lengthLbl.AutoSize = true;
-            this.lengthLbl.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lengthLbl.Location = new System.Drawing.Point(0, 54);
-            this.lengthLbl.Name = "lengthLbl";
-            this.lengthLbl.Size = new System.Drawing.Size(0, 13);
-            this.lengthLbl.TabIndex = 5;
             // 
             // Form1
             // 
@@ -316,11 +291,9 @@
         private System.Windows.Forms.Button clearBtn;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.CheckBox relCheckBox;
-        private System.Windows.Forms.Button testBtn;
         private System.Windows.Forms.Panel panelTrackBar;
         private System.Windows.Forms.Label indexLbl;
         private System.Windows.Forms.Label totalLbl;
-        private System.Windows.Forms.Label mousePosLbl;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private ScottPlot.FormsPlot hmPlot;
         private System.Windows.Forms.Label lengthLbl;

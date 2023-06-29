@@ -1,8 +1,6 @@
-﻿using ScottPlot;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using static WindowsFormsApp1.Util;
@@ -11,8 +9,10 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
-        private static readonly ScottPlot.Drawing.Colormap CMAP 
-            = new ScottPlot.Drawing.Colormap(ReverseIColormap(new ScottPlot.Drawing.Colormaps.Turbo()));
+        private static readonly ScottPlot.Drawing.Colormap CMAP
+            = ScottPlot.Drawing.Colormap.Turbo;//new ScottPlot.Drawing.Colormap(ReverseIColormap(new ScottPlot.Drawing.Colormaps.Turbo()));
+        private const System.Drawing.Drawing2D.InterpolationMode HEATMAP_INTERPOLATION = 
+            System.Drawing.Drawing2D.InterpolationMode.Bilinear;
         private const string MEASURING_UNIT_RADIUS = "mm";
         private const string MEASURING_UNIT_ANGLE = "°";
 
@@ -45,11 +45,6 @@ namespace WindowsFormsApp1
             chart1.MouseWheel += TrackBar1_MouseWheel;
         }
 
-        
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
-        {
-            this.mousePosLbl.Text = $"x={e.X} y={e.Y}";
-        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -136,35 +131,43 @@ namespace WindowsFormsApp1
 
         private void CreateSeries()
         {
-            this.innerSeries = new Series();
-            this.innerSeries.ChartArea = "ChartArea1";
-            this.innerSeries.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
-            this.innerSeries.Color = System.Drawing.Color.DodgerBlue;
-            this.innerSeries.Name = "Series1";
-            this.innerSeries.BorderWidth = 5;
+            this.innerSeries = new Series
+            {
+                ChartArea = "ChartArea1",
+                ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
+                Color = System.Drawing.Color.DodgerBlue,
+                Name = "Series1",
+                BorderWidth = 5
+            };
 
-            this.outerSeries = new Series();
-            this.outerSeries.ChartArea = "ChartArea1";
-            this.outerSeries.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
-            this.outerSeries.Name = "Series2";
-            this.outerSeries.BorderWidth = 5;
-            this.outerSeries.Color = System.Drawing.Color.DodgerBlue;
+            this.outerSeries = new Series
+            {
+                ChartArea = "ChartArea1",
+                ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
+                Name = "Series2",
+                BorderWidth = 5,
+                Color = System.Drawing.Color.DodgerBlue
+            };
 
-            scatterSeries = new Series();
-            scatterSeries.ChartArea = "ChartArea1";
-            scatterSeries.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
-            scatterSeries.CustomProperties = "PolarDrawingStyle=Marker";
-            scatterSeries.MarkerSize = 15;
-            scatterSeries.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
-            scatterSeries.Name = "Series3";
-            scatterSeries.Color = System.Drawing.Color.DodgerBlue;
+            scatterSeries = new Series
+            {
+                ChartArea = "ChartArea1",
+                ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
+                CustomProperties = "PolarDrawingStyle=Marker",
+                MarkerSize = 15,
+                MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle,
+                Name = "Series3",
+                Color = System.Drawing.Color.DodgerBlue
+            };
 
-            odSeries = new Series();
-            odSeries.ChartArea = "ChartArea1";
-            odSeries.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
-            odSeries.Name = "Series4";
-            odSeries.Color = System.Drawing.Color.Red;
-            odSeries.BorderWidth = 1;
+            odSeries = new Series
+            {
+                ChartArea = "ChartArea1",
+                ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
+                Name = "Series4",
+                Color = System.Drawing.Color.Red,
+                BorderWidth = 1
+            };
         }
 
         private void RemoveSeries()
@@ -376,7 +379,7 @@ namespace WindowsFormsApp1
                 false
                 );
             hm.Smooth = true;
-            hm.Interpolation = System.Drawing.Drawing2D.InterpolationMode.Bilinear;
+            hm.Interpolation = HEATMAP_INTERPOLATION;
             hm.XMin = 0;
             hm.XMax = 360;
             hm.YMin = 0;
