@@ -2,13 +2,14 @@
 using System.Globalization;
 using System.IO;
 using System.Collections.Generic;
+using System;
 
 namespace WindowsFormsApp1
 {
     public static class Loader
     {
 
-        public static (double, double, double, List<double[]>) LoadPlotData(string fileName)
+        public static (double, double, double, List<double[]>) LoadPlotData(string fileName, List<double[]> dest = null)
         {
             double innerDiameter;
             double outerDiameter;
@@ -20,7 +21,7 @@ namespace WindowsFormsApp1
                 innerDiameter = double.Parse(sr.ReadLine(), CultureInfo.InvariantCulture);
                 outerDiameter = double.Parse(sr.ReadLine(), CultureInfo.InvariantCulture);
                 spacing = double.Parse(sr.ReadLine(), CultureInfo.InvariantCulture);
-                data = new List<double[]>();
+                data = dest is null ? new List<double[]>() : dest;
                 sr.ReadLine();
                 
                 while (!sr.EndOfStream)
@@ -34,6 +35,7 @@ namespace WindowsFormsApp1
                     data.Add(radiuses);
                 }
             }
+            //GC.Collect();
 
             return (innerDiameter, outerDiameter, spacing, data);
         }
