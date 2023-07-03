@@ -19,3 +19,9 @@ C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.ValueT
 C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\ScottPlot.xml
 C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Numerics.Vectors.xml
 C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.ValueTuple.xml
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Buffers.dll
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Memory.dll
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Buffers.xml
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Memory.xml
+C:\Users\tomislav.bjelcic\Desktop\repos\WindowsFormsApp1\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using static WindowsFormsApp1.Util;
@@ -15,19 +14,91 @@ namespace WindowsFormsApp1
             System.Drawing.Drawing2D.InterpolationMode.Bilinear;
         private const string MEASURING_UNIT_RADIUS = "mm";
         private const string MEASURING_UNIT_ANGLE = "°";
+        private static readonly System.Drawing.Color PLOT_COLOR = System.Drawing.Color.DodgerBlue;
+        private static readonly System.Drawing.Color OD_PLOT_COLOR = System.Drawing.Color.Red;
+        private const int INTERPOLATION_POINTS_MIN = 128;
 
+
+
+
+        // ime odabrane datoteke
         private string fileName = null;
-        private Series innerSeries = null;
-        private Series outerSeries = null;
-        private Series scatterSeries = null;
+        private string FileName
+        {
+            get => fileName;
+            set
+            {
+                fileName = value;
+                AdjustPlotControls();
+            }
+        }
+
+        // zastavica jesu li nacrtani neki podaci (true=jesu, false=prazno je)
+        private bool plotPresent = false;
+        private bool PlotPresent
+        {
+            get => plotPresent;
+            set
+            {
+                plotPresent = value;
+                AdjustPlotControls();
+            }
+        }
+
+        
+        private const int ABSOLUTE_SCALE = 0;
+        private const int RELATIVE_SCALE = 1;
+        private static double Scale_Radius(double r, int scale, double ir = 0.0, double or = 0.0) => 
+            scale == ABSOLUTE_SCALE ? r : 100 * ((r - ir)/(or - ir));
+        private int GetScale() => relCheckBox.Checked ? RELATIVE_SCALE : ABSOLUTE_SCALE;
+        
+
+        
+        private Series idSeries = null;
         private Series odSeries = null;
-        private List<double[]> radiuses = null;
+        private Series datapointSeries = null;
+        private Series interpolatedSeries = null;
+
+
+
+        // Lista svih radijusa, npr R x n
+        // R je broj redaka
+        // n je broj zavojnica u svakom retku
+        private readonly List<double[]> data = new List<double[]>();
+        private int Rows
+        {
+            get => data.Count;
+        }
+        
+
+        // Polje ekvidistantnih kuteva od 0 do 360.
+        // n+1 mnogo elemenata
         private double[] angles = null;
-        private List<double[]> radiusesInterpolated = null;
+        private double[] radiusesBuf = null;
+
+        // polje ekvidistantnih kuteva nakon interpolacije za plotanje
+        // k*n + 1 mnogo elemenata, gdje je k neki prirodan broj
         private double[] anglesInterpolated = null;
-        private double innerDiameter = 0.0;
-        private double outerDiameter = 0.0;
+        private double[] radiusesInterpolatedBuf = null;
+
+        // ekvidistantni kutevi proširenja angles sa svake strane jednako
+        // u implementaciji bit će duljine 3*n + 1
+        private double[] anglesExtended = null;
+        private double[] radiusesExtendedBuf = null;
+        
+        
+
+        // ID/2
+        private double ir = 0.0;
+
+        // OD/2
+        private double or = 0.0;
+
+        // Razmak između redova zavojnica
         private double spacing = 0.0;
+
+
+
         private ScottPlot.Plottable.Heatmap hm = null;
         private ScottPlot.Plottable.HLine hline = null;
 
@@ -35,7 +106,7 @@ namespace WindowsFormsApp1
         {
             InitializeComponent();
             InitializeHeatmapPlot();
-
+            
 
             trackBar1.MouseWheel += (sender, e) =>
             {
@@ -57,14 +128,52 @@ namespace WindowsFormsApp1
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                this.fileName = openFileDialog1.FileName;
-                fileLbl.Text = this.fileName;
+                // this.fileName = openFileDialog1.FileName;
+                fileLbl.Text = openFileDialog1.FileName;
             }
+        }
+
+        private void FilenameLbl_TextChanged(object sender, EventArgs e)
+        {
+            FileName = fileLbl.Text;
+        }
+
+        private void AdjustPlotControls()
+        {
+            AdjustClearPlotBtnEnabled();
+            AdjustRelCheckBoxEnabled();
+            AdjustPlotBtnEnabled();
+            AdjustTrackBarPanelVisible();
+        }
+        private void AdjustClearPlotBtnEnabled()
+        {
+            // clear plot gumb je enabled ako je plot prisutan
+            clearBtn.Enabled = PlotPresent;
+        }
+        private void AdjustRelCheckBoxEnabled()
+        {
+            // jedino kad nije enabled je u slucaju da nije plot prisutan i nije datoteka odabrana
+            relCheckBox.Enabled = PlotPresent || !string.IsNullOrEmpty(FileName);
+        }
+        private void AdjustPlotBtnEnabled()
+        {
+            // samo je enabled ako je datoteka odabrana i plot ne postoji
+            plotBtn.Enabled = !PlotPresent && !string.IsNullOrEmpty(FileName);
+        }
+        private void AdjustTrackBarPanelVisible()
+        {
+            // vidljiv je samo kad je plot prisutan
+            panelTrackBar.Visible = PlotPresent;
+        }
+
+        private void ClearFilenameBtn_Click(object sender, EventArgs e)
+        {
+            fileLbl.Text = string.Empty;
         }
 
         private void TrackBar1_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (!trackBar1.Visible) { return; }
+            if (!PlotPresent) { return; }
             // Increment or decrement the TrackBar value by one tick
             int finalValue = trackBar1.Value + Math.Sign(e.Delta);
 
@@ -86,20 +195,22 @@ namespace WindowsFormsApp1
 
         private void PlotBtn_Click(object sender, EventArgs e)
         {
-            if (this.fileName is null)
-            {
-                MessageBox.Show(this, "No file chosen.");
-                return;
-            }
+            // Nije moguće kliknuti Plot gumb dok je fileName null
+            //if (this.fileName is null)
+            //{
+            //    MessageBox.Show(this, "No file chosen.");
+            //    return;
+            //}
 
-            if (!File.Exists(this.fileName))
-            {
-                MessageBox.Show(this, $"File {this.fileName} does not exist.");
-                return;
-            }
+            // OpenFileDialog provjerava kod selekcije postoji li datoteka
+            //if (!File.Exists(this.fileName))
+            //{
+            //    MessageBox.Show(this, $"File {this.fileName} does not exist.");
+            //    return;
+            //}
 
 
-            UpdatePlotData(this.fileName);
+            UpdatePlotData();
 
         }
 
@@ -108,167 +219,240 @@ namespace WindowsFormsApp1
             RemoveSeries();
             RemoveHeatmap();
             RemoveHline();
-            this.radiuses = null;
-            this.angles = null;
-            this.radiusesInterpolated = null;
-            this.anglesInterpolated = null;
+            DisposeResources();
 
-            this.panelTrackBar.Visible = false;
-            this.indexLbl.Text = string.Empty;
-            this.totalLbl.Text = string.Empty;
-            this.fileName = null;
-            this.fileLbl.Text = string.Empty;
 
             hmPlot.Refresh();
+            chart1.Invalidate();
+            PlotPresent = false;
+
+
+            GC.Collect();
 
         }
 
         private void RelCheckBox_Click(object sender, EventArgs e)
         {
-            if (this.innerSeries is null) return;
-            PlotChange(this.trackBar1.Value);
+            if (!PlotPresent) return;
+            PlotChange(trackBar1.Value);
         }
 
-        private void CreateSeries()
-        {
-            this.innerSeries = new Series
-            {
-                ChartArea = "ChartArea1",
-                ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
-                Color = System.Drawing.Color.DodgerBlue,
-                Name = "Series1",
-                BorderWidth = 5
-            };
 
-            this.outerSeries = new Series
-            {
-                ChartArea = "ChartArea1",
-                ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
-                Name = "Series2",
-                BorderWidth = 5,
-                Color = System.Drawing.Color.DodgerBlue
-            };
-
-            scatterSeries = new Series
+        private static Series CreateDatapointSeries() => new Series
             {
                 ChartArea = "ChartArea1",
                 ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
                 CustomProperties = "PolarDrawingStyle=Marker",
                 MarkerSize = 15,
                 MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle,
-                Name = "Series3",
-                Color = System.Drawing.Color.DodgerBlue
+                Name = "DatapointSeries",
+                Color = PLOT_COLOR
             };
 
-            odSeries = new Series
-            {
-                ChartArea = "ChartArea1",
-                ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
-                Name = "Series4",
-                Color = System.Drawing.Color.Red,
-                BorderWidth = 1
-            };
+        private static Series CreateCurveSeries(string name) => new Series
+        {
+            ChartArea = "ChartArea1",
+            ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
+            Name = name,
+            BorderWidth = 5,
+            Color = PLOT_COLOR
+        };
+
+        private static Series CreateOdSeries() => new Series
+        {
+            ChartArea = "ChartArea1",
+            ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar,
+            Name = "OdSeries",
+            Color = OD_PLOT_COLOR,
+            BorderWidth = 1
+        };
+
+        private void CreateAndAddEmptySeries()
+        {
+            idSeries = CreateCurveSeries("IdSeries");
+            odSeries = CreateOdSeries();
+            datapointSeries = CreateDatapointSeries();
+            interpolatedSeries = CreateCurveSeries("InterpolatedSeries");
+
+            chart1.Series.Add(idSeries);
+            chart1.Series.Add(odSeries);
+            chart1.Series.Add(datapointSeries);
+            chart1.Series.Add(interpolatedSeries);
+
         }
 
         private void RemoveSeries()
         {
-            this.chart1.Series.Clear();
-            this.innerSeries = null;
-            this.outerSeries = null;
-            this.scatterSeries = null;
-            this.odSeries = null;
-            this.chart1.Invalidate();
+            chart1.Series.RemoveAt(4);
+            chart1.Series.RemoveAt(3);
+            chart1.Series.RemoveAt(2);
+            chart1.Series.RemoveAt(1);
+        }
+
+
+        private void DisposeResources()
+        {
+            //idSeries.Points.Dispose();
+            idSeries.Dispose();
+            idSeries = null;
+
+            //odSeries.Points.Dispose();
+            odSeries.Dispose();
+            odSeries = null;
+
+            //interpolatedSeries.Points.Dispose();
+            interpolatedSeries.Dispose();
+            interpolatedSeries = null;
+
+            //datapointSeries.Points.Dispose();
+            datapointSeries.Dispose();
+            datapointSeries = null;
+
+            data.Clear();
+            // data = null;
+
+            
+            angles = null;
+            radiusesBuf = null;
+            anglesInterpolated = null;
+            radiusesInterpolatedBuf = null;
+            anglesExtended = null;
+            anglesInterpolated = null;
+
+
+        }
+        
+        private void UpdateSeries(double[] radiuses)
+        {
+            int n = radiuses.Length;
+
+            Array.Copy(radiuses, radiusesBuf, n);
+            radiusesBuf[n] = radiuses[0];
+
+            Array.Copy(radiuses, 0, radiusesExtendedBuf, 0, n);
+            Array.Copy(radiuses, 0, radiusesExtendedBuf, n, n);
+            Array.Copy(radiuses, 0, radiusesExtendedBuf, 2*n, n);
+            radiusesExtendedBuf[3 * n] = radiuses[0];
+
+
+
+            Interpolate(anglesExtended, radiusesExtendedBuf, anglesInterpolated, radiusesInterpolatedBuf);
+
+            int sc = GetScale();
+            double yor = Scale_Radius(or, sc, ir, or);
+            double yir = Scale_Radius(ir, sc, ir, or);
+            
+            for (int i = 0; i < anglesInterpolated.Length; i++)
+            {
+                double ang = anglesInterpolated[i];
+                double y = Scale_Radius(radiusesInterpolatedBuf[i], sc, ir, or);
+                if (PlotPresent)
+                {
+                    idSeries.Points[i].SetValueY(yir);
+                    odSeries.Points[i].SetValueY(yor);
+                    interpolatedSeries.Points[i].SetValueY(y);
+                } else
+                {
+                    
+                    idSeries.Points.AddXY(ang, yir);
+                    odSeries.Points.AddXY(ang, yor);
+                    interpolatedSeries.Points.AddXY(ang, y);
+                }
+            }
+
+
+            for (int i = 0; i < angles.Length; i++)
+            {
+                double ang = angles[i];
+                double y = Scale_Radius(radiusesBuf[i], sc, ir, or);
+                if (PlotPresent)
+                    datapointSeries.Points[i].SetValueY(y);
+                else datapointSeries.Points.AddXY(ang, y);
+            }
+
+
+
+        }
+
+        private static void Interpolate(double[] xData, double[] yData, double[] domain, double[] y)
+        {
+            alglib.spline1dbuildakima(xData, yData, out alglib.spline1dinterpolant interpolant);
+            for (int i = 0; i < domain.Length; i++)
+            {
+                y[i] = alglib.spline1dcalc(interpolant, domain[i]);
+            }
+            interpolant.Dispose();
+            
+        }
+
+        private double[,] MakeIntensities()
+        {
+            int cols = anglesInterpolated.Length;
+            double[,] intensities = new double[Rows, cols];
+
+            for (int row = 0; row < Rows; row++)
+            {
+                double[] rds = data[Rows - row - 1];
+                int n = rds.Length;
+                Array.Copy(rds, 0, radiusesExtendedBuf, 0, n);
+                Array.Copy(rds, 0, radiusesExtendedBuf, n, n);
+                Array.Copy(rds, 0, radiusesExtendedBuf, 2*n, n);
+                radiusesExtendedBuf[3*n] = rds[0];
+
+                Interpolate(anglesExtended, radiusesExtendedBuf, anglesInterpolated, radiusesInterpolatedBuf);
+                for (int col = 0; col < cols; col++)
+                {
+                    intensities[row, col] = radiusesInterpolatedBuf[col];
+                }
+            }
+
+            return intensities;
         }
 
         
 
-        private void AddSeries()
+        private void UpdatePlotData()
         {
-            this.chart1.Series.Add(this.innerSeries);
-            this.chart1.Series.Add(this.outerSeries);
-            this.chart1.Series.Add(this.scatterSeries);
-            this.chart1.Series.Add(this.odSeries);
-        }
-
-        private void ClearSeriesPoints()
-        {
-            this.innerSeries.Points.Clear();
-            this.outerSeries.Points.Clear();
-            this.scatterSeries.Points.Clear();
-            this.odSeries.Points.Clear();
-        }
-
-        private void UpdatePlotData(string fileName)
-        {
-            if (this.innerSeries is null)
-            {
-                CreateSeries();
-                AddSeries();
-                this.panelTrackBar.Visible = true;
-            }
-            ClearSeriesPoints();
-            var pd = Loader.LoadPlotData(fileName);
-            this.innerDiameter = pd.Item1;
-            this.outerDiameter = pd.Item2;
-            this.spacing = pd.Item3;
+            // poziv ove metode je moguć samo ako nije prisutan plot
             
-            var rds = pd.Item4;
-            int rows = rds.Count;
-            int n = rds[0].Length; // broj zavojnica
+            var pd = Loader.LoadPlotData(fileName, dest: data);
+            ir = pd.Item1 / 2;
+            or = pd.Item2 / 2;
+            spacing = pd.Item3;
+            //data = pd.Item4;
 
-            this.radiuses = new List<double[]>(rows);
-            this.radiusesInterpolated = new List<double[]>(rows);
-            this.angles = Linspace(0, 360, n+1);
 
-            const int min = 64;
-            int factor = min / n;
-            int interpolatedCount = (factor+1)*min + 1; // promijeniti mozda
+            int n = data[0].Length; // broj zavojnica
+            int factor = INTERPOLATION_POINTS_MIN / n;
+            int interpolatedCount = (factor + 1) * n + 1;
 
-            double[] anglesExtended = Linspace(-360, 720, 3*n + 1);
+
+            angles = Linspace(0, 360, n+1);
+            radiusesBuf = new double[n + 1];
+
+            anglesExtended = Linspace(-360, 720, 3 * n + 1);
+            radiusesExtendedBuf = new double[3 * n + 1];
+
+            anglesInterpolated = Linspace(0, 360, interpolatedCount);
+            radiusesInterpolatedBuf = new double[interpolatedCount];
+
+
+            CreateAndAddEmptySeries();
             
 
-            this.anglesInterpolated = Linspace(0, 360, interpolatedCount);
-            foreach (double[] r in rds)
-            {
-
-                // utrostruči radi interpolacije
-                double[] rRepeated = new double[3 * n + 1];
-                Array.Copy(r, 0, rRepeated, 0, n);
-                Array.Copy(r, 0, rRepeated, n, n);
-                Array.Copy(r, 0, rRepeated, 2*n, n);
-                rRepeated[3 * n] = rRepeated[0];
-                
-
-
-                double[] rPeriodic = new double[n + 1];
-                Array.Copy(r, rPeriodic, n);
-                rPeriodic[n] = rPeriodic[0];
-
-                // interpolacija periodickim kubnim splajnom
-                // alglib.spline1dbuildcubic(angles, rPeriodic, n+1, -1, 0, -1, 360, out alglib.spline1dinterpolant interpolant);
-
-                // interpolacija akima splajnom
-                alglib.spline1dbuildakima(anglesExtended, rRepeated, out alglib.spline1dinterpolant interpolant);
-                double[] rInterpolated = new double[interpolatedCount];
-                for (int i = 0; i < interpolatedCount; i++)
-                {
-                    rInterpolated[i] = alglib.spline1dcalc(interpolant, this.anglesInterpolated[i]);
-                }
-
-
-                this.radiusesInterpolated.Add(rInterpolated);
-                this.radiuses.Add(rPeriodic);
-            }
-
-            RemoveHeatmap();
-            RemoveHline();
-            AddHeatmap();
+            double[,] intensities = MakeIntensities();
+            
+            AddHeatmap(intensities);
             AddHline();
+            intensities = null;
             
-            trackBar1.Maximum = rows - 1;
+            trackBar1.Maximum = Rows - 1;
             trackBar1.Minimum = 0;
             trackBar1.Value = 0;
+            panelTrackBar.Visible = true;
             PlotChange(0);
+
+            GC.Collect();
 
 
         }
@@ -276,78 +460,82 @@ namespace WindowsFormsApp1
         
         private void PlotChange(int index)
         {
-            ClearSeriesPoints();
 
-            double[] rs = radiuses[index];
-            double thickness = (this.outerDiameter - this.innerDiameter) / 2;
-            double orig = this.innerDiameter / 2;
-            bool ticked = this.relCheckBox.Checked;
-            double ir = ticked ? 0.0 : orig;
-            double or = ticked ? 1.0 * 100.0 : this.outerDiameter / 2;
+            double y = index * this.spacing;
+            hline.Y = y;
 
-            for (int i = 0; i < this.angles.Length; i++)
-            {
-                // this.outerSeries.Points.AddXY(angles[i], rs[i]);
-                // this.innerSeries.Points.AddXY(angles[i], this.innerDiameter/2);
-                double r = ticked ? ((rs[i]-orig)/thickness)*100 : rs[i];
-                this.scatterSeries.Points.AddXY(angles[i], r);
-            }
+
+
+            indexLbl.Text = (index + 1).ToString();
+            totalLbl.Text = Rows.ToString();
+
+            offsetLbl.Text = y + MEASURING_UNIT_RADIUS;
+            lengthLbl.Text = Rows * spacing + MEASURING_UNIT_RADIUS;
+
+
+            UpdateSeries(data[index]);
+
+
+            AdjustLabels();
+
             
 
-            double[] rsInterpolated = radiusesInterpolated[index];
-            for (int i = 0; i < this.anglesInterpolated.Length; i++)
-            {
-                double r = ticked ? ((rsInterpolated[i]-orig)/thickness)*100 : rsInterpolated[i];
-                this.outerSeries.Points.AddXY(anglesInterpolated[i], r);
-                this.innerSeries.Points.AddXY(anglesInterpolated[i], ir);
-                this.odSeries.Points.AddXY(anglesInterpolated[i], or);
-            }
+            chart1.Invalidate();
+            hmPlot.Refresh();
 
-            double chartMin = ticked ? -0.8*100 : FloorUpTo(ir - 0.7*thickness, 0.1);
-            double chartMax = ticked ? 1.2 * 100 : or + 0.2 * thickness;
-            Axis yaxis = this.chart1.ChartAreas[0].AxisY;
+
+            PlotPresent = true;
+
+        }
+
+        private void AdjustLabels()
+        {
+            int sc = GetScale();
+            double yir = Scale_Radius(ir, sc, ir, or);
+            double yor = Scale_Radius(or, sc, ir, or);
+            Axis yaxis = chart1.ChartAreas[0].AxisY;
+
+
+
+            double chartMin = 0.0;
+            double chartMax = 0.0;
+            string fmt = string.Empty;
+            double interval = 0.0;
+
+            if (sc == ABSOLUTE_SCALE)
+            {
+                double thickness = yor - yir;
+                chartMin = FloorUpTo(yir - 0.7 * thickness, 0.1);
+                chartMax = yor + 0.2 * thickness;
+                interval = 0.1;
+                fmt = $"{{0}}{MEASURING_UNIT_RADIUS}";
+            } else if (sc == RELATIVE_SCALE)
+            {
+                chartMin = -80;
+                chartMax = 120;
+                fmt = "{0}%";
+                interval = 20;
+            } else
+            {
+                // nemoguće
+            }
+            
             yaxis.Minimum = chartMin;
             yaxis.Maximum = chartMax;
-            string fmt = ticked ? "{0}%" : $"{{0}}{MEASURING_UNIT_RADIUS}";
-
-            
-            
-            
-            
-            
-            
-
-            // Add tick marks for every 20 percent
-            double interval = ticked ? 20 : 0.1;
             yaxis.Interval = interval;
             double eps = 0.01 * interval;
 
             yaxis.CustomLabels.Clear();
-            for (double v = chartMin; v <= chartMax; v+=interval)
+            for (double v = chartMin; v <= chartMax; v += interval)
             {
-                string lbl = (v + eps) < ir ? string.Empty : string.Format(fmt, v);
-                yaxis.CustomLabels.Add(v-eps, v+eps, lbl);
+                string lbl = (v + eps) < yir ? string.Empty : string.Format(fmt, v);
+                yaxis.CustomLabels.Add(v - eps, v + eps, lbl);
             }
 
 
-            double y = index * this.spacing;
-            this.hline.Y = y;
-
-
-
-            this.indexLbl.Text = (index+1).ToString();
-            this.totalLbl.Text = this.radiuses.Count.ToString();
-
-            this.offsetLbl.Text = y + MEASURING_UNIT_RADIUS;
-            this.lengthLbl.Text = this.radiuses.Count * this.spacing + MEASURING_UNIT_RADIUS;
-
-
-            this.chart1.Invalidate();
-            this.hmPlot.Refresh();
-            
         }
 
-        
+
 
 
         private void InitializeHeatmapPlot()
@@ -367,23 +555,15 @@ namespace WindowsFormsApp1
 
         }
 
-        private void AddHeatmap()
+        private void AddHeatmap(double[,] intensities)
         {
-            this.hm = hmPlot.Plot.AddHeatmap(
-                ConvertToIntensities(
-                    this.radiusesInterpolated, 
-                    this.radiusesInterpolated.Count, 
-                    this.anglesInterpolated.Length
-                    ), 
-                CMAP, 
-                false
-                );
+            hm = hmPlot.Plot.AddHeatmap(intensities, CMAP, false);
             hm.Smooth = true;
             hm.Interpolation = HEATMAP_INTERPOLATION;
             hm.XMin = 0;
             hm.XMax = 360;
             hm.YMin = 0;
-            double ymax = spacing * this.radiuses.Count;
+            double ymax = spacing * Rows;
             hm.YMax = ymax;
 
             hmPlot.Plot.XAxis.SetBoundary(-5, 365);
@@ -414,7 +594,9 @@ namespace WindowsFormsApp1
 
         private void TestBtn_Click(object sender, EventArgs e)
         {
+
             
+
 
         }
     }

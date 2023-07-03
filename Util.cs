@@ -1,7 +1,6 @@
 ﻿
 
 using System;
-using System.Collections.Generic;
 
 namespace WindowsFormsApp1
 {
@@ -12,11 +11,9 @@ namespace WindowsFormsApp1
         {
             double[] linspace = new double[num];
             double diff = (stop - start) / (num - 1);
-            double curr = start;
             for (int i = 0; i < num; i++)
             {
-                linspace[i] = curr;
-                curr += diff;
+                linspace[i] = start + diff * i;
             }
             return linspace;
         }
@@ -29,45 +26,31 @@ namespace WindowsFormsApp1
             // 632, 100 => 600
         }
 
-        private class Rev : ScottPlot.Drawing.IColormap
-        {
+        //private class Rev : ScottPlot.Drawing.IColormap
+        //{
 
-            private readonly ScottPlot.Drawing.IColormap cmap;
+        //    private readonly ScottPlot.Drawing.IColormap cmap;
             
-            public Rev(ScottPlot.Drawing.IColormap cmap)
-            {
-                this.cmap = cmap;
-            }
+        //    public Rev(ScottPlot.Drawing.IColormap cmap)
+        //    {
+        //        this.cmap = cmap;
+        //    }
             
             
-            public string Name => cmap.Name;
+        //    public string Name => cmap.Name;
 
 
 
-            public (byte r, byte g, byte b) GetRGB(byte value) => cmap.GetRGB((byte)~value);
-        }
+        //    public (byte r, byte g, byte b) GetRGB(byte value) => cmap.GetRGB((byte)~value);
+        //}
 
-        public static ScottPlot.Drawing.IColormap ReverseIColormap(ScottPlot.Drawing.IColormap icmap)
-        {
+        //public static ScottPlot.Drawing.IColormap ReverseIColormap(ScottPlot.Drawing.IColormap icmap)
+        //{
 
-            return new Rev(icmap);
-        }
+        //    return new Rev(icmap);
+        //}
 
 
-        public static double[,] ConvertToIntensities(List<double[]> data, int rows, int cols)
-        {
-            double[,] intensities = new double[rows, cols];
-            for (int i = 0; i < rows; i++)
-            {
-                double[] r = data[i];
-                for (int j = 0; j < cols; j++)
-                {
-                    // unatrag po redovima
-                    intensities[rows - 1 - i, j] = r[j];
-                }
-            }
-            return intensities;
-        }
 
 
     }

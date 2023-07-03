@@ -29,14 +29,18 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.DataPoint dataPoint1 = new System.Windows.Forms.DataVisualization.Charting.DataPoint(0D, 0D);
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.testBtn = new System.Windows.Forms.Button();
+            this.chooseFileBtn = new System.Windows.Forms.Button();
+            this.clearFilenameBtn = new System.Windows.Forms.Button();
             this.relCheckBox = new System.Windows.Forms.CheckBox();
             this.clearBtn = new System.Windows.Forms.Button();
             this.plotBtn = new System.Windows.Forms.Button();
             this.fileLbl = new System.Windows.Forms.Label();
-            this.chooseFileBtn = new System.Windows.Forms.Button();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.panel2 = new System.Windows.Forms.Panel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -65,38 +69,72 @@
             this.trackBar1.Margin = new System.Windows.Forms.Padding(2);
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.trackBar1.Size = new System.Drawing.Size(63, 485);
+            this.trackBar1.Size = new System.Drawing.Size(63, 530);
             this.trackBar1.TabIndex = 0;
             this.trackBar1.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.trackBar1.Scroll += new System.EventHandler(this.TrackBar_Scroll);
             this.trackBar1.ValueChanged += new System.EventHandler(this.TrackBar_Scroll);
             // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            // 
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.testBtn);
+            this.panel1.Controls.Add(this.chooseFileBtn);
+            this.panel1.Controls.Add(this.clearFilenameBtn);
             this.panel1.Controls.Add(this.relCheckBox);
             this.panel1.Controls.Add(this.clearBtn);
             this.panel1.Controls.Add(this.plotBtn);
             this.panel1.Controls.Add(this.fileLbl);
-            this.panel1.Controls.Add(this.chooseFileBtn);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 552);
+            this.panel1.Location = new System.Drawing.Point(0, 597);
             this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1082, 30);
+            this.panel1.Size = new System.Drawing.Size(1160, 32);
             this.panel1.TabIndex = 2;
+            // 
+            // testBtn
+            // 
+            this.testBtn.Dock = System.Windows.Forms.DockStyle.Right;
+            this.testBtn.Location = new System.Drawing.Point(788, 0);
+            this.testBtn.Name = "testBtn";
+            this.testBtn.Size = new System.Drawing.Size(75, 30);
+            this.testBtn.TabIndex = 8;
+            this.testBtn.Text = "Test";
+            this.testBtn.UseVisualStyleBackColor = true;
+            this.testBtn.Visible = false;
+            this.testBtn.Click += new System.EventHandler(this.TestBtn_Click);
+            // 
+            // chooseFileBtn
+            // 
+            this.chooseFileBtn.Dock = System.Windows.Forms.DockStyle.Left;
+            this.chooseFileBtn.Location = new System.Drawing.Point(88, 0);
+            this.chooseFileBtn.Margin = new System.Windows.Forms.Padding(2);
+            this.chooseFileBtn.Name = "chooseFileBtn";
+            this.chooseFileBtn.Size = new System.Drawing.Size(77, 30);
+            this.chooseFileBtn.TabIndex = 6;
+            this.chooseFileBtn.Text = "Choose File";
+            this.chooseFileBtn.UseVisualStyleBackColor = true;
+            this.chooseFileBtn.Click += new System.EventHandler(this.ChooseFileBtn_Click);
+            // 
+            // clearFilenameBtn
+            // 
+            this.clearFilenameBtn.Dock = System.Windows.Forms.DockStyle.Left;
+            this.clearFilenameBtn.Location = new System.Drawing.Point(0, 0);
+            this.clearFilenameBtn.Name = "clearFilenameBtn";
+            this.clearFilenameBtn.Size = new System.Drawing.Size(88, 30);
+            this.clearFilenameBtn.TabIndex = 5;
+            this.clearFilenameBtn.Text = "Clear Selection";
+            this.clearFilenameBtn.UseVisualStyleBackColor = true;
+            this.clearFilenameBtn.Click += new System.EventHandler(this.ClearFilenameBtn_Click);
             // 
             // relCheckBox
             // 
             this.relCheckBox.AutoSize = true;
             this.relCheckBox.Dock = System.Windows.Forms.DockStyle.Right;
-            this.relCheckBox.Location = new System.Drawing.Point(785, 0);
+            this.relCheckBox.Enabled = false;
+            this.relCheckBox.Location = new System.Drawing.Point(863, 0);
             this.relCheckBox.Name = "relCheckBox";
-            this.relCheckBox.Size = new System.Drawing.Size(140, 28);
+            this.relCheckBox.Size = new System.Drawing.Size(140, 30);
             this.relCheckBox.TabIndex = 4;
             this.relCheckBox.Text = "Thickness relative scale";
             this.relCheckBox.UseVisualStyleBackColor = true;
@@ -105,21 +143,23 @@
             // clearBtn
             // 
             this.clearBtn.Dock = System.Windows.Forms.DockStyle.Right;
-            this.clearBtn.Location = new System.Drawing.Point(925, 0);
+            this.clearBtn.Enabled = false;
+            this.clearBtn.Location = new System.Drawing.Point(1003, 0);
             this.clearBtn.Name = "clearBtn";
-            this.clearBtn.Size = new System.Drawing.Size(75, 28);
+            this.clearBtn.Size = new System.Drawing.Size(75, 30);
             this.clearBtn.TabIndex = 3;
-            this.clearBtn.Text = "Clear";
+            this.clearBtn.Text = "Clear Plot";
             this.clearBtn.UseVisualStyleBackColor = true;
             this.clearBtn.Click += new System.EventHandler(this.ClearBtn_Click);
             // 
             // plotBtn
             // 
             this.plotBtn.Dock = System.Windows.Forms.DockStyle.Right;
-            this.plotBtn.Location = new System.Drawing.Point(1000, 0);
+            this.plotBtn.Enabled = false;
+            this.plotBtn.Location = new System.Drawing.Point(1078, 0);
             this.plotBtn.Margin = new System.Windows.Forms.Padding(2);
             this.plotBtn.Name = "plotBtn";
-            this.plotBtn.Size = new System.Drawing.Size(80, 28);
+            this.plotBtn.Size = new System.Drawing.Size(80, 30);
             this.plotBtn.TabIndex = 2;
             this.plotBtn.Text = "Plot";
             this.plotBtn.UseVisualStyleBackColor = true;
@@ -128,23 +168,11 @@
             // fileLbl
             // 
             this.fileLbl.AutoSize = true;
-            this.fileLbl.Location = new System.Drawing.Point(93, 8);
-            this.fileLbl.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.fileLbl.Location = new System.Drawing.Point(170, 8);
             this.fileLbl.Name = "fileLbl";
             this.fileLbl.Size = new System.Drawing.Size(0, 13);
-            this.fileLbl.TabIndex = 1;
-            // 
-            // chooseFileBtn
-            // 
-            this.chooseFileBtn.Dock = System.Windows.Forms.DockStyle.Left;
-            this.chooseFileBtn.Location = new System.Drawing.Point(0, 0);
-            this.chooseFileBtn.Margin = new System.Windows.Forms.Padding(2);
-            this.chooseFileBtn.Name = "chooseFileBtn";
-            this.chooseFileBtn.Size = new System.Drawing.Size(88, 28);
-            this.chooseFileBtn.TabIndex = 0;
-            this.chooseFileBtn.Text = "Choose File";
-            this.chooseFileBtn.UseVisualStyleBackColor = true;
-            this.chooseFileBtn.Click += new System.EventHandler(this.ChooseFileBtn_Click);
+            this.fileLbl.TabIndex = 7;
+            this.fileLbl.TextChanged += new System.EventHandler(this.FilenameLbl_TextChanged);
             // 
             // chart1
             // 
@@ -165,7 +193,13 @@
             this.chart1.Location = new System.Drawing.Point(0, 0);
             this.chart1.Margin = new System.Windows.Forms.Padding(2);
             this.chart1.Name = "chart1";
-            this.chart1.Size = new System.Drawing.Size(525, 552);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
+            series1.Name = "emptySeries";
+            dataPoint1.IsEmpty = true;
+            series1.Points.Add(dataPoint1);
+            this.chart1.Series.Add(series1);
+            this.chart1.Size = new System.Drawing.Size(566, 597);
             this.chart1.TabIndex = 3;
             this.chart1.Text = "chart1";
             // 
@@ -176,7 +210,7 @@
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1082, 552);
+            this.panel2.Size = new System.Drawing.Size(1160, 597);
             this.panel2.TabIndex = 4;
             // 
             // splitContainer1
@@ -192,8 +226,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.chart1);
-            this.splitContainer1.Size = new System.Drawing.Size(1019, 552);
-            this.splitContainer1.SplitterDistance = 490;
+            this.splitContainer1.Size = new System.Drawing.Size(1097, 597);
+            this.splitContainer1.SplitterDistance = 527;
             this.splitContainer1.TabIndex = 5;
             // 
             // hmPlot
@@ -201,7 +235,7 @@
             this.hmPlot.Dock = System.Windows.Forms.DockStyle.Fill;
             this.hmPlot.Location = new System.Drawing.Point(0, 0);
             this.hmPlot.Name = "hmPlot";
-            this.hmPlot.Size = new System.Drawing.Size(490, 552);
+            this.hmPlot.Size = new System.Drawing.Size(527, 597);
             this.hmPlot.TabIndex = 0;
             // 
             // panelTrackBar
@@ -212,9 +246,9 @@
             this.panelTrackBar.Controls.Add(this.totalLbl);
             this.panelTrackBar.Controls.Add(this.indexLbl);
             this.panelTrackBar.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panelTrackBar.Location = new System.Drawing.Point(1019, 0);
+            this.panelTrackBar.Location = new System.Drawing.Point(1097, 0);
             this.panelTrackBar.Name = "panelTrackBar";
-            this.panelTrackBar.Size = new System.Drawing.Size(63, 552);
+            this.panelTrackBar.Size = new System.Drawing.Size(63, 597);
             this.panelTrackBar.TabIndex = 4;
             this.panelTrackBar.Visible = false;
             // 
@@ -257,7 +291,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1082, 582);
+            this.ClientSize = new System.Drawing.Size(1160, 629);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Margin = new System.Windows.Forms.Padding(2);
@@ -284,8 +318,6 @@
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Button chooseFileBtn;
-        private System.Windows.Forms.Label fileLbl;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.Button plotBtn;
         private System.Windows.Forms.Button clearBtn;
@@ -298,6 +330,10 @@
         private ScottPlot.FormsPlot hmPlot;
         private System.Windows.Forms.Label lengthLbl;
         private System.Windows.Forms.Label offsetLbl;
+        private System.Windows.Forms.Button clearFilenameBtn;
+        private System.Windows.Forms.Button chooseFileBtn;
+        private System.Windows.Forms.Label fileLbl;
+        private System.Windows.Forms.Button testBtn;
     }
 }
 
