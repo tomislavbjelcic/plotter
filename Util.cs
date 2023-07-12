@@ -7,6 +7,8 @@ namespace WindowsFormsApp1
     public static class Util
     {
 
+        private const double EPS = 1e-6;
+
         public static double[] Linspace(double start, double stop, int num)
         {
             double[] linspace = new double[num];
@@ -25,6 +27,44 @@ namespace WindowsFormsApp1
             // 9.412, 0.1 => 9.4
             // 632, 100 => 600
         }
+
+        public static double CeilUpTo(double x, double acc)
+        {
+            return Math.Ceiling(x/acc) * acc;
+            // 9.412, 0.1 => 9.5
+            // 632, 100 => 700
+        }
+
+        
+
+        public static double Normalize(double x, double min, double max, double healthy, double cmf)
+        {
+            
+            return (x > healthy) 
+                ? (  cmf + ((1.0 - cmf) / (max - healthy)) * (x - healthy)  ) 
+                : (        (cmf         / (healthy - min)) * (x - min));
+            
+        }
+
+        public static double NormalizeInverse(double y, double min, double max, double healthy, double cmf)
+        {
+            return (y > cmf)
+                ? ( (y - cmf)*(max - healthy)/(1.0 - cmf) + healthy)
+                : (  y       *(healthy - min)/cmf           + min);
+        }
+
+
+        //public static (double, double) MinMax(double[,] arr)
+        //{
+        //    double min = double.PositiveInfinity;
+        //    double max = double.NegativeInfinity;
+        //    foreach (double d in arr)
+        //    {
+        //        min = Math.Min(min, d);
+        //        max = Math.Max(max, d);
+        //    }
+        //    return (min, max);
+        //}
 
         //private class Rev : ScottPlot.Drawing.IColormap
         //{
