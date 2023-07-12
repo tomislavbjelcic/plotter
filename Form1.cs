@@ -17,7 +17,7 @@ namespace WindowsFormsApp1
         private static readonly ScottPlot.Drawing.Colormap CMAP
             = ScottPlot.Drawing.Colormap.Balance;//new ScottPlot.Drawing.Colormap(ReverseIColormap(new ScottPlot.Drawing.Colormaps.Turbo()));
         private const double COLORMAP_OD_FRACTION = 0.5;
-        private const int FONT_SIZE = 12;
+        private const int FONT_SIZE = 14;
         private const System.Drawing.Drawing2D.InterpolationMode HEATMAP_INTERPOLATION =
             System.Drawing.Drawing2D.InterpolationMode.Bilinear;
         private const string MEASURING_UNIT_RADIUS = "mm";
@@ -142,6 +142,7 @@ namespace WindowsFormsApp1
         public Form1()
         {
             InitializeComponent();
+            AdjustPlotControls();
             ResetVariables();
             InitializeDynamic();
             InitializeHeatmapPlot();
@@ -275,36 +276,18 @@ namespace WindowsFormsApp1
 
         private void PlotBtn_Click(object sender, EventArgs e)
         {
-            // Nije moguće kliknuti Plot gumb dok je fileName null
-            //if (this.fileName is null)
-            //{
-            //    MessageBox.Show(this, "No file chosen.");
-            //    return;
-            //}
-
-            // OpenFileDialog provjerava kod selekcije postoji li datoteka
-            //if (!File.Exists(this.fileName))
-            //{
-            //    MessageBox.Show(this, $"File {this.fileName} does not exist.");
-            //    return;
-            //}
-
-
+            
             UpdatePlotData();
 
         }
 
         private void ClearBtn_Click(object sender, EventArgs e)
         {
-
-
-            
             RemoveHeatmapAndColorbar();
             RemoveHline();
             ClearResources();
             ResetVariables();
             
-
             PlotPresent = false;
             chart1.ChartAreas[0].AxisY.LabelStyle.Enabled = false;
             hmPlot.Refresh();
@@ -312,13 +295,13 @@ namespace WindowsFormsApp1
             InitializeHeatmapPlot();
             
 
-
             GC.Collect();
 
         }
 
         private void RelCheckBox_Click(object sender, EventArgs e)
         {
+            
             if (!PlotPresent) return;
             PlotChange(trackBar1.Value);
         }
@@ -677,20 +660,25 @@ namespace WindowsFormsApp1
             double ymax = spacing * Rows;
             hm.YMax = ymax;
 
-            colorbar = hmPlot.Plot.AddColorbar(hm);
-            //colorbar = new Colorbar();
-            //colorbar.UpdateColormap(hm.Colormap);
-            
             
 
             
+
+            colorbar = hmPlot.Plot.AddColorbar(hm);
             colorbar.AutomaticTicks(formatter: ColorbarTicksFormatter);
+
+
+
+
+
+            
             
             
             
             
             //colorbar.SetTicks(new double[] { 0, 0.5, 0.7 }, new string[] { "a", "b", "c" });
             colorbar.TickLabelFont.Size = FONT_SIZE;
+            
 
             hmPlot.Plot.XAxis.SetBoundary(-5, 365);
             hmPlot.Plot.YAxis.SetBoundary(-0.01*ymax, 1.01*ymax);
@@ -733,24 +721,9 @@ namespace WindowsFormsApp1
 
         private void TestBtn_Click(object sender, EventArgs e)
         {
-
-            //StringBuilder sb = new StringBuilder();
-            //int count = chart1.Series.Count;
-            //sb.AppendLine($"Data len: {data.Count}");
-            //sb.AppendLine($"PlotPresent = {PlotPresent}");
-            //sb.AppendLine($"Series count: {count}");
-            //foreach (Series s in chart1.Series) {
-            //    sb.AppendLine($"{s.Name}, Count={s.Points.Count}");
-            //}
-            //sb.AppendLine((idSeries is null).ToString());
-            //MessageBox.Show(sb.ToString());
-
-
-            //double off = chart1.ChartAreas[0].AxisY.LabelStyle.IntervalOffset;
-            //MessageBox.Show(off.ToString());
-            //MessageBox.Show(Process.GetCurrentProcess().Id.ToString());
-
-
+            StringBuilder sb = new StringBuilder();
+            
+            MessageBox.Show(this, sb.ToString());
         }
 
         private void Timer1_Tick(object sender, EventArgs e)
@@ -762,6 +735,7 @@ namespace WindowsFormsApp1
 
         private void CbRelCheckBox_Click(object sender, EventArgs e)
         {
+            
             // ne treba ništa jer se plot ionako refresha periodično sam
         }
     }
