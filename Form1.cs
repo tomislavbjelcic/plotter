@@ -1,10 +1,8 @@
 ﻿using ScottPlot.Plottable;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using static WindowsFormsApp1.Util;
@@ -14,9 +12,11 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
-        private static readonly ScottPlot.Drawing.Colormap CMAP
-            = ScottPlot.Drawing.Colormap.Balance;//new ScottPlot.Drawing.Colormap(ReverseIColormap(new ScottPlot.Drawing.Colormaps.Turbo()));
+
+        private static readonly ScottPlot.Drawing.IColormap BASE_ICMAP = new ScottPlot.Drawing.Colormaps.Balance();
+        
         private const double COLORMAP_OD_FRACTION = 0.5;
+        private const double THICKNESS_LOW_THRESHOLD_COLORMAP = 0.5;
         private const int FONT_SIZE = 14;
         private const System.Drawing.Drawing2D.InterpolationMode HEATMAP_INTERPOLATION =
             System.Drawing.Drawing2D.InterpolationMode.Bilinear;
@@ -26,6 +26,19 @@ namespace WindowsFormsApp1
         private static readonly System.Drawing.Color OD_PLOT_COLOR = System.Drawing.Color.Red;
         private const int INTERPOLATION_POINTS_MIN = 128;
         private const bool DIAM = true;
+
+        private readonly Dictionary<Keys, Action> keyCommands = new Dictionary<Keys, Action>();
+
+        private void RegisterCommands()
+        {
+            keyCommands.Add(Keys.Control | Keys.O, chooseFileBtn.PerformClick);
+            keyCommands.Add(Keys.Control | Keys.F, clearFilenameBtn.PerformClick);
+            keyCommands.Add(Keys.Control | Keys.P, plotBtn.PerformClick);
+            keyCommands.Add(Keys.Control | Keys.G, clearBtn.PerformClick);
+            keyCommands.Add(Keys.Control | Keys.E, cbRelCheckBox.PerformClick);
+            keyCommands.Add(Keys.Control | Keys.R, relCheckBox.PerformClick);
+            keyCommands.Add(Keys.Control | Keys.T, testBtn.PerformClick);
+        }
 
 
 
@@ -133,6 +146,13 @@ namespace WindowsFormsApp1
         private double scaleMin = 0.0;
         private double scaleMax = 0.0;
 
+        private ThresholdColormap icmap = null;
+        private ScottPlot.Drawing.Colormap cmap = null;
+
+
+        private double lowThresholdIntensity = 0.0;
+        private double highThresholdIntensity = 0.0;
+
 
 
         private ScottPlot.Plottable.Heatmap hm = null;
@@ -142,6 +162,7 @@ namespace WindowsFormsApp1
         public Form1()
         {
             InitializeComponent();
+            RegisterCommands();
             AdjustPlotControls();
             ResetVariables();
             InitializeDynamic();
@@ -158,6 +179,16 @@ namespace WindowsFormsApp1
             };
             trackBar1.MouseWheel += TrackBar1_MouseWheel;
             chart1.MouseWheel += TrackBar1_MouseWheel;
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyCommands.ContainsKey(keyData))
+            {
+                Action ac = keyCommands[keyData];
+                ac();
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void InitializeDynamic()
@@ -363,6 +394,9 @@ namespace WindowsFormsApp1
             anglesExtended = null;
             anglesInterpolated = null;
 
+            icmap = null;
+            cmap = null;
+
 
         }
 
@@ -373,6 +407,8 @@ namespace WindowsFormsApp1
             spacing = 0.0;
             scaleMax = double.NegativeInfinity;
             scaleMin = double.PositiveInfinity;
+            lowThresholdIntensity = 0.0;
+            highThresholdIntensity = 0.0;
         }
         
         private void UpdateSeries(double[] radiuses)
@@ -468,23 +504,17 @@ namespace WindowsFormsApp1
                 }
             }
 
-            //int cols = angles.Length;
-            //double[,] intensities = new double[Rows, cols];
-
-            //for (int row = 0; row < Rows; row++)
-            //{
-            //    double[] rds = data[Rows - row - 1];
-            //    int n = rds.Length;
-            //    Array.Copy(rds, 0, radiusesBuf, 0, n);
-            //    radiusesBuf[n] = rds[0];
-
-            //    //Interpolate(anglesExtended, radiusesExtendedBuf, anglesInterpolated, radiusesInterpolatedBuf);
-            //    for (int col = 0; col < cols-1; col++)
-            //    {
-            //        intensities[row, col] = radiusesBuf[col];
-            //    }
-            //    intensities[row, cols - 1] = intensities[row, 0];
-            //}
+            double lowThresholdRadius = ir + THICKNESS_LOW_THRESHOLD_COLORMAP * (or - ir);
+            double highThresholdRadius = scaleMax;
+            lowThresholdIntensity = Normalize(
+                lowThresholdRadius, min: scaleMin, max: scaleMax, healthy: or, cmf: COLORMAP_OD_FRACTION
+                );
+            highThresholdIntensity = Normalize(
+                highThresholdRadius, min: scaleMin, max: scaleMax, healthy: or, cmf: COLORMAP_OD_FRACTION
+                );
+            icmap.Low = lowThresholdIntensity;
+            icmap.High = highThresholdIntensity;
+            
 
             return intensities;
         }
@@ -515,6 +545,9 @@ namespace WindowsFormsApp1
 
             anglesInterpolated = Linspace(0, 360, interpolatedCount);
             radiusesInterpolatedBuf = new double[interpolatedCount];
+
+            icmap = new ThresholdColormap(BASE_ICMAP, cmf:COLORMAP_OD_FRACTION);
+            cmap = new ScottPlot.Drawing.Colormap(icmap);
 
 
             SeriesFillEmpty(idSeries, anglesInterpolated);
@@ -649,7 +682,7 @@ namespace WindowsFormsApp1
         {
             //hm = hmPlot.Plot.AddHeatmap(new double[,] { { 0} }, CMAP, false);
             hm = new Heatmap();
-            hm.Update(intensities, CMAP, 0.0, 1.0);
+            hm.Update(intensities, cmap, 0.0, 1.0);
             hmPlot.Plot.Add(hm);
             
             hm.Smooth = true;
@@ -680,8 +713,8 @@ namespace WindowsFormsApp1
             colorbar.TickLabelFont.Size = FONT_SIZE;
             
 
-            hmPlot.Plot.XAxis.SetBoundary(-5, 365);
-            hmPlot.Plot.YAxis.SetBoundary(-0.01*ymax, 1.01*ymax);
+            hmPlot.Plot.XAxis.SetBoundary(0, 360);
+            hmPlot.Plot.YAxis.SetBoundary(0, ymax);
             hmPlot.Plot.AxisAuto();
 
         }
@@ -735,8 +768,7 @@ namespace WindowsFormsApp1
 
         private void CbRelCheckBox_Click(object sender, EventArgs e)
         {
-            
-            // ne treba ništa jer se plot ionako refresha periodično sam
+            hmPlot.Refresh();
         }
     }
 }

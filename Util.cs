@@ -7,7 +7,6 @@ namespace WindowsFormsApp1
     public static class Util
     {
 
-        private const double EPS = 1e-6;
 
         public static double[] Linspace(double start, double stop, int num)
         {
@@ -52,46 +51,6 @@ namespace WindowsFormsApp1
                 ? ( (y - cmf)*(max - healthy)/(1.0 - cmf) + healthy)
                 : (  y       *(healthy - min)/cmf           + min);
         }
-
-
-        //public static (double, double) MinMax(double[,] arr)
-        //{
-        //    double min = double.PositiveInfinity;
-        //    double max = double.NegativeInfinity;
-        //    foreach (double d in arr)
-        //    {
-        //        min = Math.Min(min, d);
-        //        max = Math.Max(max, d);
-        //    }
-        //    return (min, max);
-        //}
-
-        //private class Rev : ScottPlot.Drawing.IColormap
-        //{
-
-        //    private readonly ScottPlot.Drawing.IColormap cmap;
-            
-        //    public Rev(ScottPlot.Drawing.IColormap cmap)
-        //    {
-        //        this.cmap = cmap;
-        //    }
-            
-            
-        //    public string Name => cmap.Name;
-
-
-
-        //    public (byte r, byte g, byte b) GetRGB(byte value) => cmap.GetRGB((byte)~value);
-        //}
-
-        //public static ScottPlot.Drawing.IColormap ReverseIColormap(ScottPlot.Drawing.IColormap icmap)
-        //{
-
-        //    return new Rev(icmap);
-        //}
-
-
-
 
     }
 }
