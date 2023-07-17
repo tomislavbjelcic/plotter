@@ -5,73 +5,45 @@ namespace WindowsFormsApp1
 {
     public class ThresholdColormap : IColormap
     {
-        private double high;
-        public double High
+
+        private readonly IColormap icmap;
+        private readonly PiecewiseLinear f;
+
+
+        public ThresholdColormap(IColormap icmap, params double[] fractionPoints)
         {
-            get => high;
-            set
+            this.icmap = icmap;
+            double[] byteDoubleValues = new double[fractionPoints.Length];
+            for (int i = 0; i<fractionPoints.Length; i++)
             {
-                high = value;
-                highValue = FractionToByte(value);
+                byteDoubleValues[i] = FractionToByteDouble(fractionPoints[i]);
             }
-        }
-
-        private double low;
-        public double Low
-        {
-            get => low;
-            set
-            {
-                low = value;
-                lowValue = FractionToByte(value);
-            }
-        }
-
-        private double cmf;
-        public double Cmf
-        {
-            get => cmf;
-            set
-            {
-                cmf = value;
-                cmfValue = FractionToByte(value);
-            }
+            f = new PiecewiseLinear(byteDoubleValues);
         }
 
 
-        private byte lowValue;
-        private byte highValue;
-        private byte cmfValue;
-        public IColormap Icmap { get; set; }
+        public string Name => icmap.Name;
 
-
-        public ThresholdColormap(IColormap icmap, double cmf, double high = 1.0, double low = 0.0)
-        {
-            Icmap = icmap;
-            Cmf = cmf;
-            High = high;
-            Low = low;
-        }
-
-
-        public string Name => Icmap.Name;
-
-        public (byte r, byte g, byte b) GetRGB(byte value) => Icmap.GetRGB(MapValue(value));
+        public (byte r, byte g, byte b) GetRGB(byte value) => icmap.GetRGB(MapValue(value));
 
         private byte MapValue(byte value)
         {
-            if (value <= lowValue) return byte.MinValue;
-            if (value >= highValue) return byte.MaxValue;
-            if (value == cmfValue) return cmfValue;
-            double r = value < cmfValue
-                ? (cmfValue * (value - lowValue)) / ((double)(cmfValue - lowValue))
-                : ((byte.MaxValue - cmfValue) * (value - highValue)) / ((double)(highValue - cmfValue)) + byte.MaxValue;
-            return (byte)r;
+            //if (value <= lowValue) return byte.MinValue;
+            //if (value >= highValue) return byte.MaxValue;
+            //if (value == cmfValue) return cmfValue;
+            //double r = value < cmfValue
+            //    ? (cmfValue * (value - lowValue)) / ((double)(cmfValue - lowValue))
+            //    : ((byte.MaxValue - cmfValue) * (value - highValue)) / ((double)(highValue - cmfValue)) + byte.MaxValue;
+            //return (byte)r;
+
+            return (byte)f.Apply(value);
         }
 
-        private static byte FractionToByte(double fraction)
+
+        private static double FractionToByteDouble(double fraction)
         {
             return (byte)(fraction * byte.MaxValue);
         }
+
     }
 }

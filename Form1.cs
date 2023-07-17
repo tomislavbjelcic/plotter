@@ -17,12 +17,14 @@ namespace WindowsFormsApp1
         
         private const double COLORMAP_OD_FRACTION = 0.5;
         private const double THICKNESS_LOW_THRESHOLD_COLORMAP = 0.5;
+        private const double THICKNESS_OFF_HEALTHY = 0.1;
+        private const double FRACTION_OFF_HEALTHY = 0.05;
         private const int FONT_SIZE = 14;
         private const System.Drawing.Drawing2D.InterpolationMode HEATMAP_INTERPOLATION =
             System.Drawing.Drawing2D.InterpolationMode.Bilinear;
         private const string MEASURING_UNIT_RADIUS = "mm";
         private const string MEASURING_UNIT_ANGLE = "°";
-        private static readonly System.Drawing.Color PLOT_COLOR = System.Drawing.Color.DodgerBlue;
+        private static readonly System.Drawing.Color PLOT_COLOR = System.Drawing.Color.Gray;
         private static readonly System.Drawing.Color OD_PLOT_COLOR = System.Drawing.Color.Red;
         private const int INTERPOLATION_POINTS_MIN = 128;
         private const bool DIAM = true;
@@ -74,7 +76,9 @@ namespace WindowsFormsApp1
             scale == ABSOLUTE_SCALE ? r : (r - ir) / (or - ir);
         private int GetScale() => relCheckBox.Checked ? RELATIVE_SCALE : ABSOLUTE_SCALE;
         private static double IntervalPolarChart(int scale) =>
-            scale == ABSOLUTE_SCALE ? 0.1 : 0.2;
+            scale == ABSOLUTE_SCALE ? 0.1 : 0.1;
+        private static double IntervalColorBar(int scale) =>
+            scale == ABSOLUTE_SCALE ? -1.0 : 0.1;   // na REL skali mora dijeliti 1
         private const double MAX_THICKNESS = 1.2;
         private const double MIN_THICKNESS = -0.8;
         private const int DECIMAL_PLACES = 2;
@@ -130,6 +134,11 @@ namespace WindowsFormsApp1
         // u implementaciji bit će duljine 3*n + 1
         private double[] anglesExtended = null;
         private double[] radiusesExtendedBuf = null;
+
+
+
+        private double[] cbTickFractions = null;
+        private string[] cbTickLabels = null;
         
         
 
@@ -146,12 +155,13 @@ namespace WindowsFormsApp1
         private double scaleMin = 0.0;
         private double scaleMax = 0.0;
 
+        
+        // Bit će postavljeni prilikom poziva MakeIntensities
         private ThresholdColormap icmap = null;
         private ScottPlot.Drawing.Colormap cmap = null;
 
 
-        private double lowThresholdIntensity = 0.0;
-        private double highThresholdIntensity = 0.0;
+        private double[] thresholdIntensities = null;
 
 
 
@@ -222,7 +232,6 @@ namespace WindowsFormsApp1
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                // this.fileName = openFileDialog1.FileName;
                 fileLbl.Text = openFileDialog1.FileName;
             }
         }
@@ -397,6 +406,11 @@ namespace WindowsFormsApp1
             icmap = null;
             cmap = null;
 
+            cbTickFractions = null;
+            cbTickLabels = null;
+
+            thresholdIntensities = null;
+
 
         }
 
@@ -407,8 +421,6 @@ namespace WindowsFormsApp1
             spacing = 0.0;
             scaleMax = double.NegativeInfinity;
             scaleMin = double.PositiveInfinity;
-            lowThresholdIntensity = 0.0;
-            highThresholdIntensity = 0.0;
         }
         
         private void UpdateSeries(double[] radiuses)
@@ -504,16 +516,35 @@ namespace WindowsFormsApp1
                 }
             }
 
-            double lowThresholdRadius = ir + THICKNESS_LOW_THRESHOLD_COLORMAP * (or - ir);
-            double highThresholdRadius = scaleMax;
-            lowThresholdIntensity = Normalize(
-                lowThresholdRadius, min: scaleMin, max: scaleMax, healthy: or, cmf: COLORMAP_OD_FRACTION
-                );
-            highThresholdIntensity = Normalize(
-                highThresholdRadius, min: scaleMin, max: scaleMax, healthy: or, cmf: COLORMAP_OD_FRACTION
-                );
-            icmap.Low = lowThresholdIntensity;
-            icmap.High = highThresholdIntensity;
+
+            double thickness = or - ir;
+            double[] prms = new double[]
+            {
+                Normalize(ir + THICKNESS_LOW_THRESHOLD_COLORMAP*thickness, scaleMin, scaleMax, or, COLORMAP_OD_FRACTION),
+                0.0,
+
+                Normalize(or - THICKNESS_OFF_HEALTHY*thickness, scaleMin, scaleMax, or, COLORMAP_OD_FRACTION),
+                COLORMAP_OD_FRACTION - FRACTION_OFF_HEALTHY,
+
+                Normalize(or, scaleMin, scaleMax, or, COLORMAP_OD_FRACTION),
+                COLORMAP_OD_FRACTION,
+
+                Normalize(or + THICKNESS_OFF_HEALTHY*thickness, scaleMin, scaleMax, or, COLORMAP_OD_FRACTION),
+                COLORMAP_OD_FRACTION + FRACTION_OFF_HEALTHY,
+
+                Normalize(scaleMax, scaleMin, scaleMax, or, COLORMAP_OD_FRACTION),
+                1.0
+            };
+
+            thresholdIntensities = new double[prms.Length / 2];
+            for (int i=0; i<thresholdIntensities.Length; i++)
+            {
+                thresholdIntensities[i] = prms[2 * i];
+            }
+
+
+            icmap = new ThresholdColormap(BASE_ICMAP, prms);
+            cmap = new ScottPlot.Drawing.Colormap(icmap);
             
 
             return intensities;
@@ -546,8 +577,8 @@ namespace WindowsFormsApp1
             anglesInterpolated = Linspace(0, 360, interpolatedCount);
             radiusesInterpolatedBuf = new double[interpolatedCount];
 
-            icmap = new ThresholdColormap(BASE_ICMAP, cmf:COLORMAP_OD_FRACTION);
-            cmap = new ScottPlot.Drawing.Colormap(icmap);
+            //icmap = new ThresholdColormap(BASE_ICMAP, cmf:COLORMAP_OD_FRACTION);
+            //cmap = new ScottPlot.Drawing.Colormap(icmap);
 
 
             SeriesFillEmpty(idSeries, anglesInterpolated);
@@ -557,6 +588,8 @@ namespace WindowsFormsApp1
 
 
             double[,] intensities = MakeIntensities();
+
+            CalculateColorbarLabelsRelative();
 
             
             AddHeatmapAndColorbar(intensities);
@@ -599,10 +632,13 @@ namespace WindowsFormsApp1
             //});
             UpdateSeries(data[index]);
             AdjustLabels();
-            
+
 
             //chart1.Invalidate();
             //hmPlot.Refresh();
+            
+            
+            
             
             
             
@@ -652,8 +688,6 @@ namespace WindowsFormsApp1
 
         }
 
-        
-
 
         private static void SeriesFillEmpty(Series series, double[] angles)
         {
@@ -680,7 +714,6 @@ namespace WindowsFormsApp1
 
         private void AddHeatmapAndColorbar(double[,] intensities)
         {
-            //hm = hmPlot.Plot.AddHeatmap(new double[,] { { 0} }, CMAP, false);
             hm = new Heatmap();
             hm.Update(intensities, cmap, 0.0, 1.0);
             hmPlot.Plot.Add(hm);
@@ -693,22 +726,10 @@ namespace WindowsFormsApp1
             double ymax = spacing * Rows;
             hm.YMax = ymax;
 
-            
-
-            
-
             colorbar = hmPlot.Plot.AddColorbar(hm);
-            colorbar.AutomaticTicks(formatter: ColorbarTicksFormatter);
+            //colorbar.AutomaticTicks(formatter: ColorbarTicksFormatter);
+            AdjustColorbarLabels();
 
-
-
-
-
-            
-            
-            
-            
-            
             //colorbar.SetTicks(new double[] { 0, 0.5, 0.7 }, new string[] { "a", "b", "c" });
             colorbar.TickLabelFont.Size = FONT_SIZE;
             
@@ -717,6 +738,58 @@ namespace WindowsFormsApp1
             hmPlot.Plot.YAxis.SetBoundary(0, ymax);
             hmPlot.Plot.AxisAuto();
 
+        }
+
+        private void CalculateColorbarLabelsRelative()
+        {
+            // prvo konstruirati piecewise linearnu funkciju
+            // tr(scaleMin) -> 0.0, 1.0 -> COLORMAP_OD_FRACTION, tr(scaleMax) -> 1.0
+            // oznake će piecewise linearno rasti sa laktom u 100%
+            double trscmin = Scale_Radius(scaleMin, RELATIVE_SCALE, ir, or);
+            double trscmax = Scale_Radius(scaleMax, RELATIVE_SCALE, ir, or);
+            double[] prms = new double[]
+            {
+                trscmin, 0.0, 1.0, COLORMAP_OD_FRACTION, trscmax, 1.0
+            };
+            PiecewiseLinear f = new PiecewiseLinear(prms);
+
+
+            double intrvl = IntervalColorBar(RELATIVE_SCALE);
+            double bottomTr = CeilUpTo(trscmin, intrvl);
+            int bottomIntervalCount = Convert.ToInt32((1.0 - bottomTr) / intrvl);
+
+            double topTr = FloorUpTo(trscmax, intrvl);
+            int topIntervalCount = Convert.ToInt32((topTr - 1.0) / intrvl);
+
+            int tickCount = bottomIntervalCount + topIntervalCount + 1;
+
+
+            cbTickFractions = new double[tickCount];
+            cbTickLabels = new string[tickCount];
+
+            for (int i = 0; i < tickCount; i++)
+            {
+                double tr = bottomTr + i * intrvl;
+                double frac = f.Apply(tr);
+                cbTickFractions[i] = frac;
+                cbTickLabels[i] = Format(tr, RELATIVE_SCALE);
+            }
+        }
+
+        private void AdjustColorbarLabels()
+        {
+            int sc = GetScaleColorbar();
+            colorbar.ClearTicks();
+            colorbar.AutomaticTicks(enable: false);
+            if (sc == ABSOLUTE_SCALE)
+            {
+
+                colorbar.AutomaticTicks(formatter: ColorbarTicksFormatter);
+            }
+            else if (sc == RELATIVE_SCALE)
+            {
+                colorbar.SetTicks(cbTickFractions, cbTickLabels);
+            }
         }
 
         private string ColorbarTicksFormatter(double v)
@@ -761,13 +834,14 @@ namespace WindowsFormsApp1
 
         private void Timer1_Tick(object sender, EventArgs e)
         {
-
+            
             hmPlot.RefreshRequest();
             
         }
 
         private void CbRelCheckBox_Click(object sender, EventArgs e)
         {
+            AdjustColorbarLabels();
             hmPlot.Refresh();
         }
     }

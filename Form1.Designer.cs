@@ -29,13 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.DataPoint dataPoint6 = new System.Windows.Forms.DataVisualization.Charting.DataPoint(0D, 0D);
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.DataPoint dataPoint3 = new System.Windows.Forms.DataVisualization.Charting.DataPoint(0D, 0D);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.bottomPanel = new System.Windows.Forms.Panel();
             this.fileLbl = new System.Windows.Forms.Label();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.panelTrackBar = new System.Windows.Forms.Panel();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -59,6 +58,7 @@
             this.cbRelCheckBox = new System.Windows.Forms.ToolStripMenuItem();
             this.relCheckBox = new System.Windows.Forms.ToolStripMenuItem();
             this.testBtn = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.bottomPanel.SuspendLayout();
             this.panelTrackBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
@@ -96,11 +96,6 @@
             this.fileLbl.TabIndex = 7;
             this.fileLbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.fileLbl.TextChanged += new System.EventHandler(this.FilenameLbl_TextChanged);
-            // 
-            // timer1
-            // 
-            this.timer1.Interval = 200;
-            this.timer1.Tick += new System.EventHandler(this.Timer1_Tick);
             // 
             // panelTrackBar
             // 
@@ -157,30 +152,33 @@
             // 
             // chart1
             // 
-            chartArea6.AxisX.InterlacedColor = System.Drawing.Color.Gray;
-            chartArea6.AxisX.LabelStyle.Format = "{0}°";
-            chartArea6.AxisX.LineColor = System.Drawing.Color.WhiteSmoke;
-            chartArea6.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea6.AxisX.MajorTickMark.Size = 0F;
-            chartArea6.AxisY.LabelStyle.Enabled = false;
-            chartArea6.AxisY.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea6.AxisY.LineWidth = 0;
-            chartArea6.AxisY.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea6.AxisY.MajorTickMark.Enabled = false;
-            chartArea6.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.AcrossAxis;
-            chartArea6.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Transparent;
-            chartArea6.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea6);
+            chartArea3.AxisX.InterlacedColor = System.Drawing.Color.Gray;
+            chartArea3.AxisX.LabelStyle.Format = "{0}°";
+            chartArea3.AxisX.LineColor = System.Drawing.Color.WhiteSmoke;
+            chartArea3.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea3.AxisX.MajorTickMark.Size = 0F;
+            chartArea3.AxisX.MinorGrid.Enabled = true;
+            chartArea3.AxisX.MinorGrid.Interval = 6D;
+            chartArea3.AxisX.MinorGrid.LineColor = System.Drawing.Color.WhiteSmoke;
+            chartArea3.AxisY.LabelStyle.Enabled = false;
+            chartArea3.AxisY.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea3.AxisY.LineWidth = 0;
+            chartArea3.AxisY.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea3.AxisY.MajorTickMark.Enabled = false;
+            chartArea3.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.AcrossAxis;
+            chartArea3.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Transparent;
+            chartArea3.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea3);
             this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chart1.Location = new System.Drawing.Point(0, 0);
             this.chart1.Margin = new System.Windows.Forms.Padding(2);
             this.chart1.Name = "chart1";
-            series6.ChartArea = "ChartArea1";
-            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
-            series6.Name = "emptySeries";
-            dataPoint6.IsEmpty = true;
-            series6.Points.Add(dataPoint6);
-            this.chart1.Series.Add(series6);
+            series3.ChartArea = "ChartArea1";
+            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
+            series3.Name = "emptySeries";
+            dataPoint3.IsEmpty = true;
+            series3.Points.Add(dataPoint3);
+            this.chart1.Series.Add(series3);
             this.chart1.Size = new System.Drawing.Size(562, 501);
             this.chart1.TabIndex = 3;
             this.chart1.Text = "chart1";
@@ -295,7 +293,7 @@
             // 
             this.chooseFileBtn.Name = "chooseFileBtn";
             this.chooseFileBtn.ShortcutKeyDisplayString = "Ctrl+O";
-            this.chooseFileBtn.Size = new System.Drawing.Size(186, 22);
+            this.chooseFileBtn.Size = new System.Drawing.Size(192, 22);
             this.chooseFileBtn.Text = "Choose";
             this.chooseFileBtn.Click += new System.EventHandler(this.ChooseFileBtn_Click);
             // 
@@ -320,7 +318,7 @@
             // 
             this.plotBtn.Name = "plotBtn";
             this.plotBtn.ShortcutKeyDisplayString = "Ctrl+P";
-            this.plotBtn.Size = new System.Drawing.Size(180, 22);
+            this.plotBtn.Size = new System.Drawing.Size(167, 22);
             this.plotBtn.Text = "Plot Draw";
             this.plotBtn.Click += new System.EventHandler(this.PlotBtn_Click);
             // 
@@ -328,7 +326,7 @@
             // 
             this.clearBtn.Name = "clearBtn";
             this.clearBtn.ShortcutKeyDisplayString = "Ctrl+G";
-            this.clearBtn.Size = new System.Drawing.Size(180, 22);
+            this.clearBtn.Size = new System.Drawing.Size(167, 22);
             this.clearBtn.Text = "Clear Plot";
             this.clearBtn.Click += new System.EventHandler(this.ClearBtn_Click);
             // 
@@ -366,6 +364,11 @@
             this.testBtn.Text = "Test";
             this.testBtn.Visible = false;
             this.testBtn.Click += new System.EventHandler(this.TestBtn_Click);
+            // 
+            // timer1
+            // 
+            this.timer1.Interval = 200;
+            this.timer1.Tick += new System.EventHandler(this.Timer1_Tick);
             // 
             // Form1
             // 
@@ -408,7 +411,6 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Panel bottomPanel;
         private System.Windows.Forms.Label fileLbl;
-        private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Panel panelTrackBar;
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.SplitContainer splitContainer1;
@@ -432,6 +434,7 @@
         private System.Windows.Forms.ToolStripMenuItem cbRelCheckBox;
         private System.Windows.Forms.ToolStripMenuItem relCheckBox;
         private System.Windows.Forms.ToolStripMenuItem testBtn;
+        private System.Windows.Forms.Timer timer1;
     }
 }
 

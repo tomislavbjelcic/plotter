@@ -52,5 +52,7 @@ namespace WindowsFormsApp1
                 : (  y       *(healthy - min)/cmf           + min);
         }
 
+        
+
     }
 }
