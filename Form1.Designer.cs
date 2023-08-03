@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.DataPoint dataPoint3 = new System.Windows.Forms.DataVisualization.Charting.DataPoint(0D, 0D);
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.DataPoint dataPoint2 = new System.Windows.Forms.DataVisualization.Charting.DataPoint(0D, 0D);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.bottomPanel = new System.Windows.Forms.Panel();
             this.fileLbl = new System.Windows.Forms.Label();
@@ -152,33 +152,33 @@
             // 
             // chart1
             // 
-            chartArea3.AxisX.InterlacedColor = System.Drawing.Color.Gray;
-            chartArea3.AxisX.LabelStyle.Format = "{0}°";
-            chartArea3.AxisX.LineColor = System.Drawing.Color.WhiteSmoke;
-            chartArea3.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea3.AxisX.MajorTickMark.Size = 0F;
-            chartArea3.AxisX.MinorGrid.Enabled = true;
-            chartArea3.AxisX.MinorGrid.Interval = 6D;
-            chartArea3.AxisX.MinorGrid.LineColor = System.Drawing.Color.WhiteSmoke;
-            chartArea3.AxisY.LabelStyle.Enabled = false;
-            chartArea3.AxisY.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea3.AxisY.LineWidth = 0;
-            chartArea3.AxisY.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea3.AxisY.MajorTickMark.Enabled = false;
-            chartArea3.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.AcrossAxis;
-            chartArea3.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Transparent;
-            chartArea3.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea3);
+            chartArea2.AxisX.InterlacedColor = System.Drawing.Color.Gray;
+            chartArea2.AxisX.LabelStyle.Format = "{0}°";
+            chartArea2.AxisX.LineColor = System.Drawing.Color.WhiteSmoke;
+            chartArea2.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisX.MajorTickMark.Size = 0F;
+            chartArea2.AxisX.MinorGrid.Enabled = true;
+            chartArea2.AxisX.MinorGrid.Interval = 6D;
+            chartArea2.AxisX.MinorGrid.LineColor = System.Drawing.Color.WhiteSmoke;
+            chartArea2.AxisY.LabelStyle.Enabled = false;
+            chartArea2.AxisY.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisY.LineWidth = 0;
+            chartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisY.MajorTickMark.Enabled = false;
+            chartArea2.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.AcrossAxis;
+            chartArea2.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Transparent;
+            chartArea2.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea2);
             this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chart1.Location = new System.Drawing.Point(0, 0);
             this.chart1.Margin = new System.Windows.Forms.Padding(2);
             this.chart1.Name = "chart1";
-            series3.ChartArea = "ChartArea1";
-            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
-            series3.Name = "emptySeries";
-            dataPoint3.IsEmpty = true;
-            series3.Points.Add(dataPoint3);
-            this.chart1.Series.Add(series3);
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Polar;
+            series2.Name = "emptySeries";
+            dataPoint2.IsEmpty = true;
+            series2.Points.Add(dataPoint2);
+            this.chart1.Series.Add(series2);
             this.chart1.Size = new System.Drawing.Size(562, 501);
             this.chart1.TabIndex = 3;
             this.chart1.Text = "chart1";

@@ -27,6 +27,7 @@ namespace WindowsFormsApp1
         private static readonly System.Drawing.Color PLOT_COLOR = System.Drawing.Color.Gray;
         private static readonly System.Drawing.Color OD_PLOT_COLOR = System.Drawing.Color.Red;
         private const int INTERPOLATION_POINTS_MIN = 128;
+        private const int HEATMAP_ROWS_MAX = 32768;
         private const bool DIAM = true;
 
         private readonly Dictionary<Keys, Action> keyCommands = new Dictionary<Keys, Action>();
@@ -40,6 +41,13 @@ namespace WindowsFormsApp1
             keyCommands.Add(Keys.Control | Keys.E, cbRelCheckBox.PerformClick);
             keyCommands.Add(Keys.Control | Keys.R, relCheckBox.PerformClick);
             keyCommands.Add(Keys.Control | Keys.T, testBtn.PerformClick);
+            keyCommands.Add(Keys.Control | Keys.Shift | Keys.C,
+                () =>
+                {
+                    GC.Collect();
+                    MessageBox.Show(this, "Invoked GC.Collect()");
+                }
+                );
         }
 
 
@@ -250,6 +258,7 @@ namespace WindowsFormsApp1
             AdjustTimerEnable();
             AdjustIndexPanelVisible();
             AdjustCbRelCheckBoxEnabled();
+            AdjustFilenameClearBtnEnabled();
         }
         private void AdjustClearPlotBtnEnabled()
         {
@@ -284,6 +293,11 @@ namespace WindowsFormsApp1
         {
             // jedino kad nije enabled je u slucaju da nije plot prisutan i nije datoteka odabrana
             cbRelCheckBox.Enabled = PlotPresent || !string.IsNullOrEmpty(FileName);
+        }
+        private void AdjustFilenameClearBtnEnabled()
+        {
+            // nije enabled jedino kad plot postoji
+            clearFilenameBtn.Enabled = !PlotPresent;
         }
         
 
@@ -480,15 +494,17 @@ namespace WindowsFormsApp1
         {
 
             int cols = anglesInterpolated.Length;
+
             double[,] intensities = new double[Rows, cols];
 
             scaleMin = ir;
             scaleMax = ir + MAX_THICKNESS * (or - ir);
+            
 
 
             for (int row = 0; row < Rows; row++)
             {
-                double[] rds = data[Rows - row - 1];
+                double[] rds = data[row];
                 int n = rds.Length;
                 Array.Copy(rds, 0, radiusesExtendedBuf, 0, n);
                 Array.Copy(rds, 0, radiusesExtendedBuf, n, n);
@@ -514,6 +530,14 @@ namespace WindowsFormsApp1
                         );
 
                 }
+            }
+
+            // downscale ako ima previše redaka
+            if (Rows > HEATMAP_ROWS_MAX)
+            {
+                // a baš i ne radi...
+                intensities = Downscale(intensities, HEATMAP_ROWS_MAX);
+                
             }
 
 
@@ -649,28 +673,15 @@ namespace WindowsFormsApp1
         {
             int sc = GetScale();
             double yir = Scale_Radius(ir, sc, ir, or);
-            double yor = Scale_Radius(or, sc, ir, or);
+            // double yor = Scale_Radius(or, sc, ir, or);
             Axis yaxis = chart1.ChartAreas[0].AxisY;
             
 
-            double chartMin = 0.0;
-            double chartMax = 0.0;
             double interval = IntervalPolarChart(sc);
-
-            if (sc == ABSOLUTE_SCALE)
-            {
-                double thickness = yor - yir;
-                if (DIAM) interval /= 2;
-                chartMin = FloorUpTo(yir + MIN_THICKNESS * thickness, interval);
-                chartMax = CeilUpTo(yir + MAX_THICKNESS * thickness, interval);
-            } else if (sc == RELATIVE_SCALE)
-            {
-                chartMin = MIN_THICKNESS;
-                chartMax = MAX_THICKNESS;
-            } else
-            {
-                // nemoguće
-            }
+            if (sc==ABSOLUTE_SCALE && DIAM) interval /= 2;
+            double thickness = or - ir;
+            double chartMin = FloorUpTo(Scale_Radius(Math.Min(scaleMin, ir + MIN_THICKNESS * thickness), sc, ir, or), interval);
+            double chartMax = CeilUpTo(Scale_Radius(Math.Max(scaleMax, ir + MAX_THICKNESS * thickness), sc, ir, or), interval);
             
             yaxis.Minimum = chartMin;
             yaxis.Maximum = chartMax;
@@ -714,12 +725,15 @@ namespace WindowsFormsApp1
 
         private void AddHeatmapAndColorbar(double[,] intensities)
         {
-            hm = new Heatmap();
+            //hm = new Heatmap();
+            //hm.Update(intensities, cmap, 0.0, 1.0);
+            //hmPlot.Plot.Add(hm);
+            hm = hmPlot.Plot.AddHeatmap(intensities, cmap, lockScales: false);
             hm.Update(intensities, cmap, 0.0, 1.0);
-            hmPlot.Plot.Add(hm);
             
             hm.Smooth = true;
             hm.Interpolation = HEATMAP_INTERPOLATION;
+            hm.FlipVertically = true;
             hm.XMin = 0;
             hm.XMax = 360;
             hm.YMin = 0;
@@ -727,16 +741,17 @@ namespace WindowsFormsApp1
             hm.YMax = ymax;
 
             colorbar = hmPlot.Plot.AddColorbar(hm);
-            //colorbar.AutomaticTicks(formatter: ColorbarTicksFormatter);
             AdjustColorbarLabels();
 
-            //colorbar.SetTicks(new double[] { 0, 0.5, 0.7 }, new string[] { "a", "b", "c" });
             colorbar.TickLabelFont.Size = FONT_SIZE;
-            
+
+
 
             hmPlot.Plot.XAxis.SetBoundary(0, 360);
             hmPlot.Plot.YAxis.SetBoundary(0, ymax);
             hmPlot.Plot.AxisAuto();
+
+            
 
         }
 
@@ -827,15 +842,14 @@ namespace WindowsFormsApp1
 
         private void TestBtn_Click(object sender, EventArgs e)
         {
-            StringBuilder sb = new StringBuilder();
             
-            MessageBox.Show(this, sb.ToString());
         }
 
         private void Timer1_Tick(object sender, EventArgs e)
         {
-            
-            hmPlot.RefreshRequest();
+
+            //hmPlot.RefreshRequest();
+            hmPlot.Refresh();
             
         }
 
