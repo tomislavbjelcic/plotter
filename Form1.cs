@@ -28,7 +28,7 @@ namespace WindowsFormsApp1
         private static readonly System.Drawing.Color OD_PLOT_COLOR = System.Drawing.Color.Red;
         private const int INTERPOLATION_POINTS_MIN = 128;
         private const int HEATMAP_ROWS_MAX = 32768;
-        private const bool DIAM = true;
+        private const bool DIAM = false;
 
         private readonly Dictionary<Keys, Action> keyCommands = new Dictionary<Keys, Action>();
 
